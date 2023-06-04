@@ -3,9 +3,49 @@
 
 {% block content %}
 
-<div class="container">
-    <h2>Dashboard</h2>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-3">
+            <div class="list-group">
+                <a href="#" class="list-group-item list-group-item-action active">Dashboard</a>
+                <a href="#" class="list-group-item list-group-item-action">My wishlist</a>
+                <a href="#" class="list-group-item list-group-item-action">Completed Courses</a>
+                <a href="#" class="list-group-item list-group-item-action">Account Settings</a>
+            </div>
+        </div>
 
+        <div class="col-9">
+            <h1>Welcome to your dashboard</h1>
+            <p>Here's a summary of your progress:</p>
+
+            <div class="card-deck">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Course 1</h5>
+                        <p class="card-text">In Progress</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Course 2</h5>
+                        <p class="card-text">In Progress</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Course 3</h5>
+                        <p class="card-text">In Progress</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
 {% endblock content %}
