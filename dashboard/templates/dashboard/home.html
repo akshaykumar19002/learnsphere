@@ -19,26 +19,15 @@
             <p>Here's a summary of your progress:</p>
 
             <div class="card-deck">
+                 {% for course in courses %}
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">Course 1</h5>
+                        <h5 class="card-title">{{ course.course_name }}</h5>
                         <p class="card-text">In Progress</p>
+                        <p class="card-text">Price: {{ course.price }}</p>
                     </div>
                 </div>
-
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Course 2</h5>
-                        <p class="card-text">In Progress</p>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Course 3</h5>
-                        <p class="card-text">In Progress</p>
-                    </div>
-                </div>
+                {% endfor %}
             </div>
         </div>
     </div>
