@@ -1,9 +1,27 @@
 from django.shortcuts import render
 from .forms import FeedbackForm
+from recommender.hybrid_recommender import HybridRecommender
+from dashboard.models import Course
 
 # Create your views here.
 def dashboard(request):
-    return render(request, 'dashboard/home.html')
+    courses = HybridRecommender().get_base_recommendations('programming')
+    # Assuming df is your DataFrame
+    course_list = []
+    for index, row in courses.iterrows():
+        course = Course()
+        course.set(
+            course_name=row['course_name'],
+            description=row['description'],
+            course_url=row['course_url'],
+            rating=row['rating'],
+            review_count=row['review_count'],
+            website=row['website'],
+            topics=row['topics']
+        )
+        course_list.append(course)
+
+    return render(request, 'dashboard/home.html', {'courses': course_list})
 
 
 def feedback(request):

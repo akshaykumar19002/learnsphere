@@ -1,0 +1,9 @@
+django
+pandas
+numpy
+scikit-learn
+scipy
+nltk
+gensim
+pymongo
+django-environ

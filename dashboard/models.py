@@ -1,11 +1,42 @@
+from learnsphere.mongo_utils import MongoDB
 from django.db import models
 
 # Create your models here.
-class Course(models.Model):
-    course_id = models.CharField(max_length=50, unique=True)
-    course_name = models.CharField(max_length=200)
-    price = models.DecimalField(max_digits=8, decimal_places=2)
-    duration = models.CharField(max_length=50)
+class Course:
+    
+    def __init__(self):
+        self.mongoClient = MongoDB('courses')
+    
+    def set(self, course_name, description, course_url, rating, review_count, website, topics):
+        self.id = None
+        self.course_name = course_name
+        self.description = description
+        self.course_url = course_url
+        self.rating = rating
+        self.review_count = review_count
+        self.website = website
+        self.topics = topics
+        
+    def get(self):
+        course = vars(self)
+        del course['mongoClient']
+        
+    def insert(self):
+        course = self.get()
+        self.mongoClient.create(course)
+        
+    def get_all(self):
+        return self.mongoClient.read()
+    
+    def get_by_topic(self, topic):
+        return self.mongoClient.read({'topics': {'$regex': topic, '$options': 'i'}})
+
+        
+    def update(self):
+        self.mongoClient.update({'id': self._id}, self.get())
+        
+    def delete(self):
+        self.mongoClient.delete({'id': self._id})
 
     def __str__(self):
         return self.course_name
@@ -14,3 +45,4 @@ class Feedback(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
     message = models.TextField()
+    
