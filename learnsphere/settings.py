@@ -88,14 +88,6 @@ DATABASES = {
     }
 }
 
-## changes for mongodb
-_MONGODB_DATABASE_URI = env('MONGODB_DATABASE_URI')
-
-client = MongoClient(_MONGODB_DATABASE_URI)
-
-db = client[env('MONGODB_DATABASE_NAME')]
-
-
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
