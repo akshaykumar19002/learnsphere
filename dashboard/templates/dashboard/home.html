@@ -16,18 +16,14 @@
 
         <div class="col-9">
             <h1>Welcome to your dashboard</h1>
-            <p>Here's a summary of your progress:</p>
+            <p>These are the recommended courses for you:</p>
 
             <div class="row">
                  {% for course in courses %}
                 <div class="col-sm-5 m-2 p-2">
                     <div class="card">
                         <div class="card-body">
-                            {% if  course.website == 'udemy'%}
-                                <a href="https://udemy.com{{ course.course_url }}"><h5 class="card-title">{{ course.course_name }}</h5></a>
-                            {% else %}
-                                <a href="{{ course.course_url }}"><h5 class="card-title">{{ course.course_name }}</h5></a>
-                            {% endif %}
+                            <a href="{% url 'dashboard:feedback' pk=course.id %}"><h5 class="card-title">{{ course.course_name }}</h5></a>
                             <p class="card-text">{{ course.website | capfirst }}</p>
                         </div>
                     </div>

@@ -11,6 +11,7 @@ def dashboard(request):
     for index, row in courses.iterrows():
         course = Course()
         course.set(
+            id = row['id'],
             course_name=row['course_name'],
             description=row['description'],
             course_url=row['course_url'],
@@ -24,7 +25,8 @@ def dashboard(request):
     return render(request, 'dashboard/home.html', {'courses': course_list})
 
 
-def feedback(request):
+def feedback(request, pk):
+    course_name = Course().get_by_id(pk)[0]['course_name']
     if request.method == 'POST':
         form = FeedbackForm(request.POST)
         if form.is_valid():
@@ -32,4 +34,4 @@ def feedback(request):
 
     else:
         form = FeedbackForm()
-    return render(request, 'dashboard/feedback/feedback.html', {'form': form})
+    return render(request, 'dashboard/feedback/feedback.html', {'form': form, 'id': pk, 'name': course_name})

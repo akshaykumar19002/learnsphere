@@ -7,8 +7,8 @@ class Course:
     def __init__(self):
         self.mongoClient = MongoDB('courses')
     
-    def set(self, course_name, description, course_url, rating, review_count, website, topics):
-        self.id = None
+    def set(self, id, course_name, description, course_url, rating, review_count, website, topics):
+        self.id = id
         self.course_name = course_name
         self.description = description
         self.course_url = course_url
@@ -31,12 +31,14 @@ class Course:
     def get_by_topic(self, topic):
         return self.mongoClient.read({'topics': {'$regex': topic, '$options': 'i'}})
 
-        
+    def get_by_id(self, id):
+        return self.mongoClient.read({'id': id})
+    
     def update(self):
-        self.mongoClient.update({'id': self._id}, self.get())
+        self.mongoClient.update({'id': self.id}, self.get())
         
     def delete(self):
-        self.mongoClient.delete({'id': self._id})
+        self.mongoClient.delete({'id': self.id})
 
     def __str__(self):
         return self.course_name
