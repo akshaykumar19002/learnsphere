@@ -7,3 +7,8 @@ nltk
 gensim
 pymongo
 django-environ
+six
+django-utils-six
+crispy-bootstrap5
+django-crispy-forms
+psycopg2-binary

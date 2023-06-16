@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <h3>Profile</h3>
+    <br>
+  <div class="row">
+    <div class="col-2 mr-4">
+      <ul class="nav nav-pills flex-column" id="profileTabs">
+        <li class="nav-item">
+          <a class="nav-link active" id="username-tab" data-bs-toggle="pill" href="#username">Update Username</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="password-tab" data-bs-toggle="pill" href="#password">Change Password</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="delete-tab" data-bs-toggle="pill" href="#delete">Delete Account</a>
+        </li>
+      </ul>
+    </div>
+
+
+    <div class="col-7 shadow-lg p-3 mb-5 bg-body rounded">
+      <div class="tab-content" id="profileTabsContent">
+        <div class="tab-pane fade show active" id="username">
+          <h2>Update Username</h2>
+          <form method="post">
+            {% csrf_token %}
+            {{ username_form.as_p }}
+            <button type="submit" name="username_form" class="btn btn-primary">Update</button>
+          </form>
+        </div>
+        <div class="tab-pane fade" id="password">
+          <h2>Change Password</h2>
+          <form method="post">
+            {% csrf_token %}
+            {{ password_form.as_p }}
+            <button type="submit" name="password_form" class="btn btn-primary">Change Password</button>
+          </form>
+        </div>
+        <div class="tab-pane fade" id="delete">
+          <h2>Delete Account</h2>
+          <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal">
+            Delete Account
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteConfirmationModalLabel">Delete Account</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to delete your account?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger" id="deleteAccountBtn">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('deleteAccountBtn').addEventListener('click', function() {
+    // Perform account deletion logic here
+    // You can make an AJAX request to the server to delete the account
+  });
+</script>
+{% endblock %}

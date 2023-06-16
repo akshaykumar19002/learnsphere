@@ -20,6 +20,9 @@ class MongoDB:
     def read(self, query={}):
         return self.collection.find(query)
 
+    def read_column(self, column, query={}):
+        return self.collection.find(query, {'_id': 0, column: 1})
+    
     def update(self, query, data):
         return self.collection.update_one(query, {'$set': data})
 

@@ -27,6 +27,9 @@ class Course:
         
     def get_all(self):
         return self.mongoClient.read()
+
+    def get_topics(self):
+        return self.mongoClient.read_column('topics')
     
     def get_by_topic(self, topic):
         return self.mongoClient.read({'topics': {'$regex': topic, '$options': 'i'}})

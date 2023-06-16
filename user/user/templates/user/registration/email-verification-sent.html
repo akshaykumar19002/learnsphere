@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<style>
+
+    body {
+        background-color: gray;
+    }
+
+</style>
+
+<body>
+    <br>
+    <div class="container bg-white shadow-md p-5 form-layout">
+
+        <div class="text-center">
+            <i class="fa fa-envelope fa-3x" aria-hidden="true"></i>
+            <br><br>
+
+            <h5> A verification link has been sent to your email address.</h5>
+            <hr>
+            <p> Please verify your email address to continue. </p>
+            
+        </div>
+    </div>
+</body>
+
+{% endblock content %}

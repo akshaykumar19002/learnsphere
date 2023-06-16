@@ -11,8 +11,8 @@ class DashboardConfig(AppConfig):
         # Initialize environment variables
         env = environ.Env()
         environ.Env.read_env()
-        uri = env('DB_URI')
-        db_name = env('DB_NAME')
+        uri = env('MONGO_DB_URI')
+        db_name = env('MONGO_DB_NAME')
         print("Initializing MongoDB client...")
         MongoDB.initialize(uri, db_name)
         print("Done initializing MongoDB client.")
