@@ -71,3 +71,21 @@ class ChangePasswordForm(forms.Form):
 
         if new_password != confirm_password:
             raise forms.ValidationError("New password and confirm password must match.")
+
+
+class UserPreferencesForm(forms.ModelForm):
+    class Meta:
+        model = UserPreference
+        fields = ['topics', 'dream_job']
+        exclude = ['user']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['topics'].queryset =  get_topics()
+        self.fields['dream_job'].queryset = get_jobs()
+
+    def clean_topics(self):
+        topics = self.cleaned_data.get('topics')
+        if len(topics) != 3:
+            raise forms.ValidationError("You must select exactly 3 topics.")
+        return topics

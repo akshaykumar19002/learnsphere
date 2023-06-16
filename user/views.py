@@ -138,3 +138,18 @@ def user_profile(request):
     }
 
     return render(request, 'user/profile.html', context)
+
+
+@login_required(login_url='user:login')
+def user_preferences(request):
+    if request.method == 'POST':
+        form = UserPreferencesForm(request.POST)
+        if form.is_valid():
+            user_pref = form.save(commit=False)
+            user_pref.user = request.user
+            user_pref.save()
+            form.save_m2m()
+            return redirect('success_page')
+    else:
+        form = UserPreferencesForm()
+    return render(request, 'user/preferences.html', {'form': form})
