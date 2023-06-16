@@ -37,7 +37,7 @@ class Register(View):
             })
             user.email_user(mail_subject, message)
 
-            return redirect('user:email-verification-sent')
+            return redirect('email-verification-sent')
         return render(request, 'user/registration/register.html', {'form': form})
         
 
@@ -69,9 +69,9 @@ def email_verification(request, uidb64, token):
     if user is not None and user_tokenizer_generate.check_token(user, token):
         user.is_active = True
         user.save()
-        return redirect('user:email-verification-success')
+        return redirect('email-verification-success')
     else:
-        return redirect('user:email-verification-failed')
+        return redirect('email-verification-failed')
 
 def email_verification_sent(request):
     return render(request, 'user/registration/email-verification-sent.html')
@@ -93,10 +93,10 @@ def user_logout(request):
 
     messages.success(request, 'You have been logged out successfully.')
 
-    return redirect('user:login')
+    return redirect('login')
 
 
-@login_required(login_url='user:login')
+@login_required(login_url='login')
 def delete_user(request):
     user = User.objects.get(id=request.user.id)
     
@@ -108,7 +108,7 @@ def delete_user(request):
     return render(request, 'user/delete-user.html')
 
 
-@login_required(login_url='user:login')
+@login_required(login_url='login')
 def user_profile(request):
     user = User.objects.get(id=request.user.id)
 
@@ -140,7 +140,7 @@ def user_profile(request):
     return render(request, 'user/profile.html', context)
 
 
-@login_required(login_url='user:login')
+@login_required(login_url='login')
 def user_preferences(request):
     if request.method == 'POST':
         form = UserPreferencesForm(request.POST)
