@@ -70,8 +70,22 @@
 
 <script>
   document.getElementById('deleteAccountBtn').addEventListener('click', function() {
-    // Perform account deletion logic here
-    // You can make an AJAX request to the server to delete the account
+
+      $.ajax({
+          url: "{% url 'delete-user' %}",
+          type: "POST",
+          data: {
+              csrfmiddlewaretoken: '{{ csrf_token }}',
+              action: 'post'
+          },
+          success: function(response) {
+              console.log(response);
+              location.href = "{% url 'dashboard:dashboard' %}";
+          },
+          error: function(xhr, errmsg, err) {
+              console.log(err);
+          }
+      });
   });
 </script>
 {% endblock %}

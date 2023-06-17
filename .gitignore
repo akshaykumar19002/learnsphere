@@ -3,3 +3,4 @@ venv
 .idea
 .env
 .vscode
+db.sqlite3
