@@ -4,31 +4,81 @@
 
 {% block content %}
 
-<div class="container-fluid py-5">
-    <form method="post">
-        {% csrf_token %}
+<link rel="stylesheet" href="{% static 'css/preferences.css' %}">
 
-        <h2>Select your favourite topics</h2>
-        {% for choice in form.topics %}
-        <div class="form-check">
-            {{ choice.tag }}
-            <label class="form-check-label" for="{{ choice.id_for_label }}">
-                {{ choice.choice_label }}
-            </label>
-        </div>
-        {% endfor %}
-        
-        <h2 class="mt-5">Select your dream job</h2>
-        <select class="form-control" name="{{ form.dream_job.name }}">
-            {% for choice in form.dream_job %}
-            <option value="{{ choice.data.value }}" {% if choice.data.selected %}selected{% endif %}>
-                {{ choice.choice_label }}
-            </option>
-            {% endfor %}
-        </select>
-
-        <button type="submit" class="btn btn-primary mt-4">Submit</button>
-    </form>
+<div class="container-fluid pl-3 pt-2">
+  <h2>My Preferences</h2>
 </div>
 
+<div class="container-fluid p-5 row">
+
+    <div class="col-md-7 offset-md-2">
+        <form method="post">
+            {% csrf_token %}
+
+            {% if form.errors %}
+                <div class="alert alert-danger" role="alert">
+                    Please correct the error below.
+                </div>
+            {% endif %}
+
+            <h3>Select your favourite topics (max 3 allowed)</h3>
+
+            {% if form.topics.errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.topics.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="row" data-topic-name="{{ form.topics.name }}">
+              {% for checkbox in form.topics %}
+                  <div class="form-check checkbox-container col-3 m-3">
+                      {{ checkbox.tag }}
+                      <label for="{{ checkbox.id_for_label }}">
+                          {{ checkbox.choice_label }}
+                      </label>
+                  </div>
+              {% endfor %}
+            </div>
+          
+
+
+            <h3 class="mt-5">Select your dream job</h3>
+
+            {% if form.dream_job.errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.dream_job.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <select class="form-control" name="{{ form.dream_job.name }}">
+                {% for choice in form.dream_job %}
+                    <option value="{{ choice.data.value }}" {% if choice.data.selected %}selected{% endif %}>
+                        {{ choice.choice_label }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="btn btn-primary mt-4">Submit</button>
+        </form>
+    </div>
+</div>
+<script>
+  var checkboxes = document.querySelectorAll('input[name="{{ form.topics.name }}"]');
+  var maxAllowed = 3;
+  for (var i = 0; i < checkboxes.length; i++) {
+    checkboxes[i].onclick = function() {
+      var checkedCount = document.querySelectorAll('input[name="{{ form.topics.name }}"]:checked').length;
+      if (checkedCount > maxAllowed) {
+        this.checked = false;
+      }
+    }
+  }
+</script>
+
+  
 {% endblock content %}

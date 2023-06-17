@@ -2,7 +2,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django import forms
 from django.forms.widgets import PasswordInput, TextInput
-from .models import UserPreference
+from .models import UserPreference, Topic, Job
 
 from recommender.utils import *
 
@@ -73,19 +73,20 @@ class ChangePasswordForm(forms.Form):
             raise forms.ValidationError("New password and confirm password must match.")
 
 
-class UserPreferencesForm(forms.ModelForm):
-    class Meta:
-        model = UserPreference
-        fields = ['topics', 'dream_job']
-        exclude = ['user']
-        
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['topics'].queryset =  get_topics()
-        self.fields['dream_job'].queryset = get_jobs()
+class UserPreferencesForm(forms.Form):
+    topics = forms.ModelMultipleChoiceField(
+        queryset=Topic.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+    )
+    dream_job = forms.ModelChoiceField(
+        queryset=Job.objects.all(),
+    )
 
     def clean_topics(self):
+        print(self.cleaned_data )
         topics = self.cleaned_data.get('topics')
-        if len(topics) != 3:
-            raise forms.ValidationError("You must select exactly 3 topics.")
+        print(topics)
+        if topics is None or len(topics) < 3:
+            raise forms.ValidationError("You must select at least 3 topics.")
         return topics
+

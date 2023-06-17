@@ -28,13 +28,13 @@
                     <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Categories</a>
+                    <a class="nav-link btn btn-alert navbar-btn text-white" href="#">Categories</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">My Courses</a>
+                    <a class="nav-link btn btn-alert navbar-btn text-white" href="#">My Courses</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="feedback">Feedback</a>
+                    <a class="nav-link btn btn-alert navbar-btn text-white" href="feedback">Feedback</a>
                 </li>
             </ul>
 
@@ -45,11 +45,15 @@
             <ul class="navbar-nav ms-auto">
                 &nbsp;
                 {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="btn btn-alert navbar-btn text-white" type="button"  href="{% url 'profile' %}"> <i class="fa fa-user"></i> &nbsp; Profile </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="btn btn-alert navbar-btn text-white" type="button"  href="{% url 'logout' %}"> <i class="fa fa-sign-out"></i> &nbsp; Logout </a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle btn btn-alert navbar-btn text-white" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        My Account
+                        </a>
+                        <ul class="dropdown-menu dark-dropdown" aria-labelledby="navbarDropdownMenuLink">
+                            <li><a class="dropdown-item btn btn-alert navbar-btn text-white" href="{% url 'profile' %}">Profile</a></li>
+                            <li><a class="dropdown-item btn btn-alert navbar-btn text-white" href="{% url 'preferences' %}">Preferences</a></li>
+                            <li><a class="dropdown-item btn btn-alert navbar-btn text-white" href="{% url 'logout' %}">Logout</a></li>
+                        </ul>
                     </li>
                 {% else %}
                     <li class="nav-item">

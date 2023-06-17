@@ -7,3 +7,17 @@
     color: inherit;
     text-decoration: underline;
 }
+
+.dark-dropdown {
+    background-color: #343a40;
+    color: #fff;
+}
+
+.dark-dropdown .dropdown-item {
+    color: #fff;
+}
+
+.dark-dropdown .dropdown-item:hover, .dark-dropdown .dropdown-item:focus {
+    color: #fff;
+    background-color: #6c757d;
+}

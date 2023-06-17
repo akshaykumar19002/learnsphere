@@ -12,6 +12,7 @@ from django.contrib import messages
 
 from .forms import *
 from .token import user_tokenizer_generate
+from .models import Topic, Job, UserPreference
 
 class Register(View):
     
@@ -142,14 +143,29 @@ def user_profile(request):
 
 @login_required(login_url='login')
 def user_preferences(request):
+    unused_topics = Topic.objects.exclude(userpreference__isnull=False)
+    try:
+        user_pref = UserPreference.objects.get(user=request.user)
+    except UserPreference.DoesNotExist:
+        user_pref = None
+
     if request.method == 'POST':
         form = UserPreferencesForm(request.POST)
         if form.is_valid():
-            user_pref = form.save(commit=False)
-            user_pref.user = request.user
+            topics = form.cleaned_data['topics']
+            dream_job = form.cleaned_data['dream_job']
+            if user_pref is None:
+                user_pref = UserPreference(user=request.user)
+            user_pref.topics.set(topics)
+            user_pref.dream_job = dream_job
             user_pref.save()
-            form.save_m2m()
-            return redirect('success_page')
+            messages.success(request, 'Your preferences have been saved successfully.')
+            return redirect('dashboard:dashboard')
+        else:
+            return render(request, 'user/registration/preferences.html', {'form': form, 'topics': unused_topics})
     else:
-        form = UserPreferencesForm()
-    return render(request, 'user/preferences.html', {'form': form})
+        if user_pref is not None:
+            form = UserPreferencesForm(initial={'topics': user_pref.topics.all(), 'dream_job': user_pref.dream_job})
+        else:
+            form = UserPreferencesForm()
+    return render(request, 'user/registration/preferences.html', {'form': form, 'topics': unused_topics})
