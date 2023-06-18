@@ -35,3 +35,7 @@ def feedback(request, pk):
     else:
         form = FeedbackForm()
     return render(request, 'dashboard/feedback/feedback.html', {'form': form, 'id': pk, 'name': course_name})
+
+def course_detail(request, course_id):
+    course = Course().get_by_id(course_id)[0]
+    return render(request, 'dashboard/course_detail.html', {'course': course})

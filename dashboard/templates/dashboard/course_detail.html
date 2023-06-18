@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+  .description {
+    position: relative;
+    max-height: 4.5em; /* Adjust the height as needed */
+    overflow: hidden;
+  }
+
+  .description.collapsed::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 1.5em;
+    background: linear-gradient(transparent, white);
+  }
+
+  .description.collapsed .truncate {
+    margin-right: -1em;
+  }
+
+  .description.collapsed .full-description {
+    display: none;
+  }
+
+  .more-btn {
+    margin-top: 0.5em;
+  }
+</style>
+
+<div class="container">
+  <h1>{{ course.course_name }}</h1>
+  
+  <div class="description collapsed">
+    <p class="truncate">{{ course.description | truncatechars:300}}</p>
+    <p class="full-description d-none">{{ course.description }}</p>
+    <button class="btn btn-link more-btn">More</button>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col-md-6">
+      {% if course.level %}
+        <p><strong>Level:</strong> {{ course.level }}</p>
+      {% endif %}
+      {% if course.price %}
+        <p><strong>Price:</strong> {{ course.price }}</p>
+      {% else %}
+        <p><strong>Price:</strong> Free</p>
+      {% endif %}
+      {% if course.language %}
+        <p><strong>Language:</strong> {{ course.language }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col-md-6">
+      <p><strong>Rating:</strong> {{ course.rating }}</p>
+      <p><strong>Review Count:</strong> {{ course.review_count }}</p>
+    </div>
+    <div class="col-md-6">
+      <a href="{{ course.course_url }}" class="btn btn-primary" target="_blank">Visit Website</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    var description = document.querySelector(".description");
+    var truncate = document.querySelector(".truncate");
+    var fullDescription = document.querySelector(".full-description");
+    var moreBtn = document.querySelector(".more-btn");
+    
+    // Show the "More" button if the description exceeds two lines
+    var lineHeight = parseFloat(window.getComputedStyle(truncate).lineHeight);
+    if (truncate.offsetHeight / lineHeight < 1) {
+      moreBtn.style.display = "none";
+    }
+    
+    // Toggle the visibility of the full description
+    moreBtn.addEventListener("click", function() {
+      description.classList.toggle("collapsed");
+      if (description.classList.contains("collapsed")) {
+        moreBtn.textContent = "More";
+      } else {
+        moreBtn.textContent = "Less";
+      }
+    });
+  });
+</script>
+{% endblock %}
