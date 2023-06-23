@@ -29,6 +29,32 @@
   .more-btn {
     margin-top: 0.5em;
   }
+
+  .rating {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    direction: rtl;
+  }
+
+  .rating input {
+    display: none;
+  }
+
+  .rating label {
+    cursor: pointer;
+    color: #ccc;
+  }
+
+  .rating label:hover,
+  .rating label:hover ~ label,
+  .rating input:checked ~ label {
+    color: gold;
+  }
+
+  .rating label:nth-child(n) {
+    order: -1;
+  }
 </style>
 
 <div class="container">
@@ -58,13 +84,35 @@
 
   <div class="row mt-3">
     <div class="col-md-6">
-      <p><strong>Rating:</strong> {{ course.rating }}</p>
+      <p><strong>Rating:</strong> {{ course.rating |floatformat:1 }}</p>
       <p><strong>Review Count:</strong> {{ course.review_count }}</p>
     </div>
     <div class="col-md-6">
       <a href="{{ course.course_url }}" class="btn btn-primary" target="_blank">Visit Website</a>
     </div>
   </div>
+
+  <div class="row mt-3">
+    <form id="ratingForm" action="{% url 'dashboard:course_detail' course_id=course.id%}" method="POST">
+      {% csrf_token %}
+      <div class="form-group">
+          <label for="id_rating">Rating:</label>
+          <div class="rating">
+              <input type="radio" id="star1" name="rating" value="1" {% if feedback.rating == 1 %} checked {% endif %}>
+              <label for="star1"><i class="fas fa-star"></i></label>
+              <input type="radio" id="star2" name="rating" value="2" {% if feedback.rating == 2 %} checked {% endif %}>
+              <label for="star2"><i class="fas fa-star"></i></label>
+              <input type="radio" id="star3" name="rating" value="3" {% if feedback.rating == 3 %} checked {% endif %}>
+              <label for="star3"><i class="fas fa-star"></i></label>
+              <input type="radio" id="star4" name="rating" value="4" {% if feedback.rating == 4 %} checked {% endif %}>
+              <label for="star4"><i class="fas fa-star"></i></label>
+              <input type="radio" id="star5" name="rating" value="5" {% if feedback.rating == 5 %} checked {% endif %}>
+              <label for="star5"><i class="fas fa-star"></i></label>
+          </div>
+      </div>
+    </form>
+  </div>
+
 </div>
 
 <script>
@@ -88,6 +136,12 @@
       } else {
         moreBtn.textContent = "Less";
       }
+    });
+  });
+
+  document.querySelectorAll('.rating input').forEach(input => {
+    input.addEventListener('change', function() {
+      document.getElementById('ratingForm').submit();
     });
   });
 </script>

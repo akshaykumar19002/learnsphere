@@ -1,7 +1,17 @@
 from learnsphere.mongo_utils import MongoDB
 from django.db import models
+from django.contrib.auth.models import User
 
-# Create your models here.
+
+class Feedback(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    course_id = models.IntegerField(null=True, blank=True)
+    rating = models.IntegerField()
+    
+    class Meta:
+        unique_together = ('user', 'course_id')
+    
+
 class Course:
     
     def __init__(self):
@@ -42,12 +52,14 @@ class Course:
         
     def delete(self):
         self.mongoClient.delete({'id': self.id})
+        
+    def update_rating(self, course_id, rating, current_rating):
+        course = self.mongoClient.read({'id': course_id})[0]
+        if current_rating == 0:
+            self.mongoClient.update({'id': course_id}, {'rating': ((course['rating'] * course['review_count']) + rating) / (course['review_count'] + 1), 'review_count': course['review_count'] + 1})
+        else:
+            self.mongoClient.update({'id': course_id}, {
+                'rating': ((course['rating'] * course['review_count']) + (current_rating - rating)) / (course['review_count'] + 1)})
 
     def __str__(self):
         return self.course_name
-
-class Feedback(models.Model):
-    name = models.CharField(max_length=100)
-    email = models.EmailField()
-    message = models.TextField()
-    
