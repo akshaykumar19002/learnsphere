@@ -1,6 +1,7 @@
 from learnsphere.mongo_utils import MongoDB
 from django.db import models
 from django.contrib.auth.models import User
+import uuid
 
 
 class Feedback(models.Model):
@@ -63,3 +64,14 @@ class Course:
 
     def __str__(self):
         return self.course_name
+
+
+class Session(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+class Chat(models.Model):
+    session = models.ForeignKey(Session, related_name='chats', on_delete=models.CASCADE)
+    user_message = models.TextField()
+    bot_message = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+    <h1>Chat with bot</h1>
+    <form method="post">
+        {% csrf_token %}
+        <input type="text" name="message" required>
+        <button type="submit">Send</button>
+    </form>
+    {% for chat in chats %}
+        <p>User: {{ chat.user_message }}</p>
+        <p>Bot: {{ chat.bot_message | safe }}</p>
+    {% endfor %}
+
+{% endblock %}

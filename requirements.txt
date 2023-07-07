@@ -12,3 +12,6 @@ django-utils-six
 crispy-bootstrap5
 django-crispy-forms
 psycopg2-binary
+channels
+openai
+channels_redis

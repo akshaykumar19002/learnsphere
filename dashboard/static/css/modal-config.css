@@ -1,0 +1,63 @@
+.modal-dialog {
+    margin-right: 10px;
+    margin-left: auto;
+}
+
+.close {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+}
+
+.modal-additional {
+    height: 90vh;
+    width: 30vw;
+    position: fixed;
+    right: 20px;
+}
+
+.bot-response {
+    background: white;
+    font-size: 16px;
+    line-height: 20px;
+    border-radius: 20px;
+    word-wrap: break-word;
+    max-width: 100%;
+    padding: 15px 17px;
+    border-bottom-left-radius: 5px;
+}
+
+.user-message {
+    background: white;
+    font-size: 16px;
+    line-height: 20px;
+    border-radius: 20px;
+    word-wrap: break-word;
+    max-width: 100%;
+    padding: 15px 17px;
+    border-bottom-right-radius: 5px;
+    align-items: flex-end;
+}
+
+.bot-options {
+    font-size: 16px;
+    line-height: 20px;
+    font-weight: 600;
+    max-width: 100%;
+    margin: 4px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    transition: all .3s;
+    cursor: pointer;
+}
+
+.bot-option {
+    margin: 4px;
+    border-radius: 16px;
+    border: 1px solid;
+    padding: 5px 16px;
+    border-color: rgb(0, 102, 255);
+    color: rgb(0, 102, 255);
+    background: rgb(255, 255, 255);
+}
