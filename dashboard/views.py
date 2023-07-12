@@ -20,8 +20,6 @@ openai.api_key = env('OPENAI_API_KEY')
 
 def dashboard(request, searchTxt=None):
     if searchTxt is not None:
-        print('searching')
-        print(searchTxt)
         course_list = Course().search(searchTxt)
     else:
         courses = HybridRecommender().get_base_recommendations('programming')
@@ -52,7 +50,7 @@ def dashboard(request, searchTxt=None):
     return render(request, 'dashboard/home.html', {'courses': course_list, 'wishlist': wishlist})
 
 
-@login_required(login_url='user:login')
+@login_required(login_url='login')
 def course_detail(request, course_id):
     course = Course().get_by_id(course_id)[0]
     user = User.objects.get(pk=request.user.id)
@@ -110,8 +108,8 @@ def chat_view(request):
         # prepend the system message and append the current user message
         messages = [
             {"role": "system", "content": "You are a helpful assistant who will recommend courses to users."},
-            {"role": "system", "content": "Only provide the course name and link to the course. Do not provide any other information."},
-            {"role": "system", "content": "If you do not have a course to recommend, just say 'no'."},
+            {"role": "user", "content": "Only provide the course name and link to the course. Do not provide any other information."},
+            {"role": "user", "content": "If you do not have a course to recommend, just say 'no'."},
             {"role": "system", "content": "Also, only provide responses in bullet points and also no lead-in text."},
         ]
         
@@ -119,6 +117,7 @@ def chat_view(request):
             messages.append({"role": "user", "content": "Response should be less than 200 characters."})
         else:
             messages.append({"role": "user", "content": "Response should be in the format ```Course Name $ Course Link```"})
+            messages.append({"role": "user", "content": "Example: ```Introduction to Python $ https://www.udemy.com/course/pythonforbeginnersintro/```"})
             
         # messages += previous_messages
         messages.append({"role": "user", "content": query})
@@ -139,9 +138,10 @@ def chat_view(request):
         # get course details from bot response
         if 'recommend' in query or 'suggest' in query:
             response = parse_bot_response(bot_response)
-            print(response)
-            return JsonResponse({"courses": response})
-        
+            if len(response) != 0:
+                return JsonResponse({"courses": response})
+            else:
+                return JsonResponse({'message': bot_response})
         return JsonResponse({"message": bot_response})
 
 
@@ -152,17 +152,23 @@ def parse_bot_response(content):
     for line in lines:
         if line.strip() != '':
             parts = line.split("$")  # split the line into parts
-            if len(parts) == 2:  # if the line has the correct format
-                course = {
-                    "name": parts[0].split('-')[1].strip(),
-                    "link": parts[1].strip()
-                }
+            if len(parts) == 2:
+                if '-' in parts[0]:
+                    course = {
+                        "name": parts[0].split('-')[1].strip(),
+                        "link": parts[1].strip()
+                    }
+                else:
+                    course = {
+                        "name": parts[0].strip(),
+                        "link": parts[1].strip()
+                    }
                 courses.append(course)
-
+    print(courses)
     return courses  
 
 
-@login_required(login_url='user:login')
+@login_required(login_url='login')
 def toggle_course_in_wishlist(request, course_id):
     if request.method == 'POST':
         wishlist, created = Wishlist.objects.get_or_create(user=request.user)
@@ -180,7 +186,7 @@ def toggle_course_in_wishlist(request, course_id):
         return JsonResponse({'status': 'bad request'}, status=400)
 
 
-@login_required(login_url='user:login')
+@login_required(login_url='login')
 def wishlist(request):
     wishlist = Wishlist.objects.filter(user=request.user)
     if len(wishlist) > 0:
