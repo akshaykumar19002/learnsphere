@@ -42,8 +42,8 @@
             <div class="list-group">
                 <a href="{% url 'dashboard:dashboard' %}" class="list-group-item list-group-item-action active">Dashboard</a>
                 <a href="{% url 'dashboard:wishlist' %}" class="list-group-item list-group-item-action">My wishlist</a>
-                <a href="#" disabled class="list-group-item list-group-item-action">Completed Courses</a>
-                <a href="#" disabled class="list-group-item list-group-item-action">Account Settings</a>
+                <a href="#" style="pointer-events: none" class="list-group-item list-group-item-action">Completed Courses</a>
+                <a href="#" style="pointer-events: none" class="list-group-item list-group-item-action">Account Settings</a>
             </div>
         </div>
         {% csrf_token %}

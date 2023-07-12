@@ -156,6 +156,7 @@ def user_preferences(request):
             dream_job = form.cleaned_data['dream_job']
             if user_pref is None:
                 user_pref = UserPreference(user=request.user)
+                user_pref.save()
             user_pref.topics.set(topics)
             user_pref.dream_job = dream_job
             user_pref.save()
