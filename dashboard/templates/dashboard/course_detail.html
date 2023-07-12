@@ -30,31 +30,39 @@
     margin-top: 0.5em;
   }
 
-  .rating {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    direction: rtl;
-  }
-
-  .rating input {
+  .rating-star {
     display: none;
   }
 
-  .rating label {
-    cursor: pointer;
-    color: #ccc;
+  /* Create stars */
+  .star {
+      font-size: 2em;
+      color: #ccc;
+      cursor: pointer;
+      transition: color 0.2s;
   }
-
-  .rating label:hover,
-  .rating label:hover ~ label,
-  .rating input:checked ~ label {
-    color: gold;
+  /* On hover, color stars up to and including the one hovered over */
+  .rating-star:not(:checked) ~ .star:hover,
+  .rating-star:not(:checked) ~ .star:hover ~ .star {
+      color: #FDE16D;
   }
-
-  .rating label:nth-child(n) {
-    order: -1;
+  /* Color stars to the right of the selected one */
+  .rating-star:checked ~ .star {
+      color: #E6B600;
   }
+  .rating-stars {
+      display: flex;
+      flex-direction: row-reverse;
+      justify-content: flex-end;
+      align-items: center; /* Align items vertically in the middle */
+  }
+  
+  /* Color stars */
+  .star.gold {
+      color: #E6B600;
+  }
+  
+  
 </style>
 
 <div class="container">
@@ -88,7 +96,7 @@
       <p><strong>Review Count:</strong> {{ course.review_count }}</p>
     </div>
     <div class="col-md-6">
-      <a href="{{ course.course_url }}" class="btn btn-primary" target="_blank">Visit Website</a>
+      <a href="{{ course.course_url }}" class="btn btn-primary" target="_blank">Visit Course Website</a>
     </div>
   </div>
 
@@ -96,18 +104,12 @@
     <form id="ratingForm" action="{% url 'dashboard:course_detail' course_id=course.id%}" method="POST">
       {% csrf_token %}
       <div class="form-group">
-          <label for="id_rating">Rating:</label>
-          <div class="rating">
-              <input type="radio" id="star1" name="rating" value="1" {% if feedback.rating == 1 %} checked {% endif %}>
-              <label for="star1"><i class="fas fa-star"></i></label>
-              <input type="radio" id="star2" name="rating" value="2" {% if feedback.rating == 2 %} checked {% endif %}>
-              <label for="star2"><i class="fas fa-star"></i></label>
-              <input type="radio" id="star3" name="rating" value="3" {% if feedback.rating == 3 %} checked {% endif %}>
-              <label for="star3"><i class="fas fa-star"></i></label>
-              <input type="radio" id="star4" name="rating" value="4" {% if feedback.rating == 4 %} checked {% endif %}>
-              <label for="star4"><i class="fas fa-star"></i></label>
-              <input type="radio" id="star5" name="rating" value="5" {% if feedback.rating == 5 %} checked {% endif %}>
-              <label for="star5"><i class="fas fa-star"></i></label>
+          <label for="id_rating">Your Feedback:</label>
+          <div class="rating-stars">
+            {% for choice in feedback.rating %}
+              <input type="radio" class="rating-star" name="rating" value="{{ choice.data.value }}" id="star{{ choice.data.value }}">
+              <label class="star {% if choice.data.value <= feedback.ratings %}gold{% endif %}" for="star{{ choice.data.value }}">&#9733;</label>
+            {% endfor %}
           </div>
       </div>
     </form>
@@ -139,7 +141,7 @@
     });
   });
 
-  document.querySelectorAll('.rating input').forEach(input => {
+  document.querySelectorAll('.rating-star').forEach(input => {
     input.addEventListener('change', function() {
       document.getElementById('ratingForm').submit();
     });

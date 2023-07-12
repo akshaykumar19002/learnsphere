@@ -1,18 +1,22 @@
-from django.shortcuts import render
-# from .forms import FeedbackForm
+from django.shortcuts import render, get_object_or_404, redirect
+from .forms import FeedbackForm
 from django.contrib.auth.models import User
 from recommender.hybrid_recommender import HybridRecommender
 from dashboard.models import Course, Feedback
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse as JSONResponse
+from django.http import JsonResponse
 
 from .models import *
 import openai
 import json
 import re
+import environ
 
-openai.api_key = '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'
+# Initialize environment variables
+env = environ.Env()
+environ.Env.read_env()
 
+openai.api_key = env('OPENAI_API_KEY')
 
 def dashboard(request):
     courses = HybridRecommender().get_base_recommendations('programming')
@@ -31,30 +35,42 @@ def dashboard(request):
             topics=row['topics']
         )
         course_list.append(course)
-
-    return render(request, 'dashboard/home.html', {'courses': course_list})
+    if request.user.is_authenticated:
+        user = User.objects.get(pk=request.user.id)
+        wishlist = Wishlist.objects.filter(user=user)
+        if len(wishlist) > 0:
+            wishlist = wishlist[0]
+        else:
+            wishlist = None
+    else:
+        wishlist = None
+    return render(request, 'dashboard/home.html', {'courses': course_list, 'wishlist': wishlist})
 
 
 @login_required(login_url='user:login')
 def course_detail(request, course_id):
     course = Course().get_by_id(course_id)[0]
     user = User.objects.get(pk=request.user.id)
-    feedback = Feedback.objects.filter(user=user, course_id=course_id)
-    if len(feedback) > 0:
-        feedback = feedback[0]
-    else:
-        feedback = None
+    feedbacks = Feedback.objects.filter(user=user, course_id=course_id)
     if request.method == 'POST':
-        user_rating = int(request.POST.get('rating'))
-        if feedback is None:
+        feedback = FeedbackForm(request.POST)
+        if not feedback.is_valid():
+            user_rating = 0
+        user_rating = int(feedback.cleaned_data['rating'])
+        if len(feedbacks) == 0:
             feedback = Feedback(user=user, course_id=course_id, rating=user_rating)
             feedback.save()
             Course().update_rating(course_id, user_rating, 0)
         else:
-            Course().update_rating(course_id, user_rating, feedback.rating)
-            feedback.rating = user_rating
-            feedback.save()
+            feedbacks[0].rating = user_rating
+            Course().update_rating(course_id, feedbacks[0].rating, user_rating)
+            feedbacks[0].save()
         return render(request, 'dashboard/course_detail.html', {'course': course, 'feedback': feedback})
+    if len(feedbacks) > 0:
+        feedback = FeedbackForm()
+        feedback.ratings = feedbacks[0].rating
+    else:
+        feedback = FeedbackForm()
     return render(request, 'dashboard/course_detail.html', {'course': course, 'feedback': feedback})
 
 
@@ -111,14 +127,14 @@ def chat_view(request):
         chat.save()
         
         if 'NO' in bot_response.upper():
-            return JSONResponse({"message": 'Please provide a valid prompt.'})
+            return JsonResponse({"message": 'Please provide a valid prompt.'})
         # get course details from bot response
         if 'recommend' in query or 'suggest' in query:
             response = parse_bot_response(bot_response)
             print(response)
-            return JSONResponse({"courses": response})
+            return JsonResponse({"courses": response})
         
-        return JSONResponse({"message": bot_response})
+        return JsonResponse({"message": bot_response})
 
 
 def parse_bot_response(content):
@@ -136,3 +152,35 @@ def parse_bot_response(content):
                 courses.append(course)
 
     return courses  
+
+
+@login_required(login_url='user:login')
+def toggle_course_in_wishlist(request, course_id):
+    if request.method == 'POST':
+        wishlist, created = Wishlist.objects.get_or_create(user=request.user)
+
+        if wishlist.has_course(course_id):
+            wishlist.remove_course(course_id)
+            response = {'status': 'removed'}
+        else:
+            wishlist.add_course(course_id)
+            response = {'status': 'added'}
+
+        return JsonResponse(response)
+
+    else:
+        return JsonResponse({'status': 'bad request'}, status=400)
+
+
+@login_required(login_url='user:login')
+def wishlist(request):
+    wishlist = Wishlist.objects.filter(user=request.user)
+    if len(wishlist) > 0:
+        wishlist = wishlist[0]
+        courses = []
+        for course_id in wishlist.course_ids:
+            courses.append(Course().get_by_id(course_id)[0])
+    else:
+        wishlist = None
+        courses = []
+    return render(request, 'dashboard/wishlist.html', {'wishlist': wishlist, 'courses': courses})

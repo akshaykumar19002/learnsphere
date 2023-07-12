@@ -4,6 +4,8 @@
 
 {% block content %}
 
+{% load extra_filters %}
+
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
@@ -16,6 +18,24 @@
         right: 20px;
     }
 
+    /* Create stars */
+    .star {
+        font-size: 2em;
+        color: #ccc;
+    }
+    /* Color stars */
+    .star.gold {
+        color: #E6B600;
+    }
+
+    .heart-icon {
+        color: grey;
+    }
+    
+    .heart-icon.filled {
+        color: red;
+    }    
+
 </style>
 
 <link rel="stylesheet" href="{% static 'css/modal-config.css' %}">
@@ -24,13 +44,13 @@
     <div class="row">
         <div class="col-3">
             <div class="list-group">
-                <a href="#" class="list-group-item list-group-item-action active">Dashboard</a>
-                <a href="#" class="list-group-item list-group-item-action">My wishlist</a>
+                <a href="{% url 'dashboard:dashboard' %}" class="list-group-item list-group-item-action active">Dashboard</a>
+                <a href="{% url 'dashboard:wishlist' %}" class="list-group-item list-group-item-action">My wishlist</a>
                 <a href="#" class="list-group-item list-group-item-action">Completed Courses</a>
                 <a href="#" class="list-group-item list-group-item-action">Account Settings</a>
             </div>
         </div>
-
+        {% csrf_token %}
         <div class="col-9">
             <h1>Welcome to your dashboard</h1>
             <span>These are the recommended courses for you:</span>
@@ -50,6 +70,19 @@
                                 {% endif %}
                             {% endif %}
                             <p class="card-text">{{ course.website | capfirst }}</span>
+                            <br>
+                            {% for i in course.rating|times %}
+                                <span class="star gold">&#9733;</span>
+                            {% endfor %}
+                            <!-- Generate unfilled stars -->
+                            {% for i in course.rating|range_to %}
+                                <span class="star">&#9733;</span>
+                            {% endfor %}
+                            {% if course.id in wishlist.course_ids %}
+                                <i class="fa fa-heart float-end heart-icon filled" id="heart{{ course.id }}" onclick="toggleWishlist({{ course.id }})"></i>
+                            {% else %}
+                                <i class="fa fa-heart float-end heart-icon" id="heart{{ course.id }}" onclick="toggleWishlist({{ course.id }})"></i>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -160,8 +193,30 @@
         .catch(error => console.log(error));
         
     }
-    
 
+    function toggleWishlist(courseId) {
+        var heart = document.getElementById('heart' + courseId);
+        var url = "/wishlist/add_remove/" + courseId;
+    
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status == 'added') {
+                heart.classList.add('filled');
+            } else if (data.status == 'removed') {
+                heart.classList.remove('filled');
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    }        
 
 </script>
 

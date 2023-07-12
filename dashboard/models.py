@@ -75,3 +75,24 @@ class Chat(models.Model):
     user_message = models.TextField()
     bot_message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
+
+
+class Wishlist(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    course_ids = models.JSONField(default=list)
+    
+    def add_course(self, course_id):
+        if course_id not in self.course_ids:
+            self.course_ids.append(course_id)
+            self.save()
+
+    def remove_course(self, course_id):
+        if course_id in self.course_ids:
+            self.course_ids.remove(course_id)
+            self.save()
+
+    def has_course(self, course_id):
+        return course_id in self.course_ids
+
+    def __str__(self):
+        return f'Wishlist of {self.user.username}'

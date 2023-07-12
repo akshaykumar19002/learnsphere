@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+{% load extra_filters %}
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+<style>
+
+    .bottom-right-button {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+    }
+
+    /* Create stars */
+    .star {
+        font-size: 2em;
+        color: #ccc;
+    }
+    /* Color stars */
+    .star.gold {
+        color: #E6B600;
+    }
+
+    .heart-icon {
+        color: grey;
+    }
+    
+    .heart-icon.filled {
+        color: red;
+    }    
+
+</style>
+
+<link rel="stylesheet" href="{% static 'css/modal-config.css' %}">
+
+<div class="container-fluid">
+    <div class="row">
+        {% csrf_token %}
+        <div class="col-12">
+            <h1>Welcome to your wishlist</h1>
+
+            <div class="row">
+                 {% for course in courses %}
+                <div class="col-sm-5 m-2 p-2">
+                    <div class="card">
+                        <div class="card-body">
+                            {% if user.is_authenticated %}
+                                <a href="{% url 'dashboard:course_detail' course_id=course.id %}"><h5 class="card-title">{{ course.course_name }}</h5></a>
+                            {% else %}
+                                {% if course.website == 'udemy' %}
+                                    <a href="https://udemy.com{{ course.course_url }}"><h5 class="card-title">{{ course.course_name }}</h5></a>
+                                {% else %}
+                                    <a href="{{course.course_url}}"><h5 class="card-title">{{ course.course_name }}</h5></a>
+                                {% endif %}
+                            {% endif %}
+                            <p class="card-text">{{ course.website | capfirst }}</span>
+                            <br>
+                            {% for i in course.rating|times %}
+                                <span class="star gold">&#9733;</span>
+                            {% endfor %}
+                            <!-- Generate unfilled stars -->
+                            {% for i in course.rating|range_to %}
+                                <span class="star">&#9733;</span>
+                            {% endfor %}
+                            {% if course.id in wishlist.course_ids %}
+                                <i class="fa fa-heart float-end heart-icon filled" id="heart{{ course.id }}" onclick="toggleWishlist({{ course.id }})"></i>
+                            {% else %}
+                                <i class="fa fa-heart float-end heart-icon" id="heart{{ course.id }}" onclick="toggleWishlist({{ course.id }})"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+<div class="bottom-right-button">
+    <button class="btn chat-button" data-bs-toggle="modal" data-bs-target="#staticBackdrop" id="openModal" style="border-radius: 30%; border: 1px solid;">
+        <img src="{% static 'robot.png' %}" alt="chat" width="50px" height="50px">
+    </buton>
+</div>
+
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="staticBackdropLabel" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content modal-additional">
+            <div class="modal-header">
+                <div class="row">
+                    <div class="col-3">
+                        <img src="{% static 'robot.png' %}" alt="chat" width="50px" height="50px">
+                    </div>
+                    <div class="offset-1 col-4">
+                        <h5 class="modal-title" id="staticBackdropLabel">ChatBot</h5>
+                    </div>
+                    <div class="close float-right">
+                        <button type="button" class="close btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body" style="background: rgb(234, 238, 243);">
+                <div class="text-start">
+                    <span>Chatbot</span>
+                </div>
+                <div class="bot-response">
+                    <span>Hi, I am your personal assistant. What can I help you with?</span>
+                </div>
+                <br>
+                <div class="bot-response">
+                    <span>I can help you with finding the right course for you or I can take your feedback for some course.</span>
+                </div>
+                <br>
+                <br>
+            </div>
+            <div class="modal-footer">
+                <div class="input-group mb-3">
+                    <input type="text" id="message-field" class="form-control" placeholder="Type your message here" aria-label="Recipient's username" aria-describedby="send-button">
+                    <button class="btn btn-outline-secondary" type="button" id="send-button">Send</button>
+                </div>
+                <div class="text-center px-2">
+                    <span>Powered by <a href="chat.openai.com">ChatGPT</a></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $("#send-button").click(function() {
+            var message = $("#message-field").val();
+            $("#message-field").val("");  // clear the input field
+            //console.log(message);
+            sendMessage(message);
+        });
+    });
+
+    function addUserResponse(message) {
+        $(".modal-body").append('<div class="text-end"><span>You</span></div><br><div class="user-message"><span>' + message + '</span></div><br>');
+    }
+
+    function addBotTag() {
+        $(".modal-body").append('<div class="text-start"><span>Chatbot</span></div><br>');
+    }
+    function addBotResponse(message) {
+        $(".modal-body").append('<div class="bot-response"><span>' + message + '</span></div><br>');
+    }
+
+    function sendMessage(message) {
+        addUserResponse(message);
+        fetch("{% url 'dashboard:chat' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({'message': message, 'csrfmiddlewaretoken': '{{ csrf_token }}'})
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('response for bot')
+            console.log(data)
+            addBotTag();
+            if (data.courses) {
+                response = 'Here are some courses that might interest you:<br><ul>';
+                // Display the courses as clickable links
+                for (var i = 0; i < data.courses.length; i++) {
+                    var course = data.courses[i];
+                    response += '<li><a href="' + course.link + '">' + course.name + '</a><br></li>';
+                }
+                response += '</ul>';
+                addBotResponse(response);
+            } else {
+                // Display the assistant's message in the chat box
+                addBotResponse(data.message);
+            }    
+        })
+        .catch(error => console.log(error));
+        
+    }
+
+    function toggleWishlist(courseId) {
+        var heart = document.getElementById('heart' + courseId);
+        var url = "/wishlist/add_remove/" + courseId;
+    
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status == 'added') {
+                heart.classList.add('filled');
+            } else if (data.status == 'removed') {
+                window.location.reload();
+                heart.classList.remove('filled');
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    }        
+
+</script>
+
+{% endblock content %}

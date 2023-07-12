@@ -15,3 +15,4 @@ psycopg2-binary
 channels
 openai
 channels_redis
+uwsgi
