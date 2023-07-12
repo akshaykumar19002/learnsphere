@@ -13,4 +13,7 @@ class FeedbackForm(forms.ModelForm):
 
     class Meta:
         model = Feedback
-        fields = ['rating']
+        fields = ['comment', 'rating', 'anonymous']
+        widgets = {
+            'comment': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+        }

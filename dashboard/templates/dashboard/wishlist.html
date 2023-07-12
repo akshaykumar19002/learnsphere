@@ -70,13 +70,16 @@
                                 <span class="star">&#9733;</span>
                             {% endfor %}
                             {% if course.id in wishlist.course_ids %}
-                                <i class="fa fa-heart float-end heart-icon filled" id="heart{{ course.id }}" onclick="toggleWishlist({{ course.id }})"></i>
+                                <a href="#"><i class="fa fa-heart float-end heart-icon filled" id="heart{{ course.id }}" onclick="toggleWishlist({{ course.id }})"></i></a>
                             {% else %}
-                                <i class="fa fa-heart float-end heart-icon" id="heart{{ course.id }}" onclick="toggleWishlist({{ course.id }})"></i>
+                                <a href="#"><i class="fa fa-heart float-end heart-icon" id="heart{{ course.id }}" onclick="toggleWishlist({{ course.id }})"></i></a>
                             {% endif %}
                         </div>
                     </div>
                 </div>
+                {% empty %}
+                    <br><br><br>
+                    <h4>No courses in your wishlist</h4>
                 {% endfor %}
             </div>
         </div>

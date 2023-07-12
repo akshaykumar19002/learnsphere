@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 
+{% load extra_filters %}
 {% block content %}
 <style>
   .description {
@@ -33,7 +34,6 @@
   .rating-star {
     display: none;
   }
-
   /* Create stars */
   .star {
       font-size: 2em;
@@ -56,12 +56,16 @@
       justify-content: flex-end;
       align-items: center; /* Align items vertically in the middle */
   }
-  
-  /* Color stars */
-  .star.gold {
-      color: #E6B600;
-  }
-  
+
+  /* Create stars */
+    .star {
+        font-size: 2em;
+        color: #ccc;
+    }
+    /* Color stars */
+    .star.gold {
+        color: #E6B600;
+    }
   
 </style>
 
@@ -100,20 +104,74 @@
     </div>
   </div>
 
-  <div class="row mt-3">
-    <form id="ratingForm" action="{% url 'dashboard:course_detail' course_id=course.id%}" method="POST">
-      {% csrf_token %}
-      <div class="form-group">
-          <label for="id_rating">Your Feedback:</label>
-          <div class="rating-stars">
-            {% for choice in feedback.rating %}
-              <input type="radio" class="rating-star" name="rating" value="{{ choice.data.value }}" id="star{{ choice.data.value }}">
-              <label class="star {% if choice.data.value <= feedback.ratings %}gold{% endif %}" for="star{{ choice.data.value }}">&#9733;</label>
-            {% endfor %}
-          </div>
-      </div>
-    </form>
+  <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#feedbackModal">
+    {% if feedbackProvided %}Update Feedback{% else %}Provide Feedback {% endif %}
+  </button>
+
+  <div class="feedbacks">
+    <hr>
+    <h2>Feedbacks/Reviews:</h2>
+    <div class="row">
+        {% for review in feedbacks %}
+        <div class="card col-md-5 m-4">
+            <div class="card-body">
+                <h5>{% if review.anonymous %}Anonymous{% else %}{{ review.user.username }}{% endif %}</h5>
+                {% for i in review.rating|times %}
+                    <span class="star gold">&#9733;</span>
+                {% endfor %}
+                <!-- Generate unfilled stars -->
+                {% for i in review.rating|range_to %}
+                    <span class="star">&#9733;</span>
+                {% endfor %}
+                <p class="card-text">{{ review.comment }}</p>
+                <p class="card-footer">Posted on {{ review.date_posted }}</p>
+            </div>
+        </div>
+        <br>
+        {% empty %}
+        <p>No reviews yet.</p>
+        {% endfor %}
+    </div>
   </div>
+  
+  <div class="modal fade" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="feedbackModalLabel">Provide your feedback</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+
+          <form method="post">
+              {% csrf_token %}
+              <label>Rating</label>
+              <div class="rating-stars">
+                  {% for choice in form.rating %}
+                  <input type="radio" class="rating-star" name="rating" value="{{ choice.data.value }}" id="star{{ choice.data.value }}">
+                  <label class="star" for="star{{ choice.data.value }}">&#9733;</label>
+                  {% endfor %}
+              </div>
+              <br>
+              <div class="form-group">
+                  <label for="{{ form.comment.id_for_label }}">Review</label>
+                  {{ form.comment }}
+              </div>
+              <br>
+
+              <div class="form-group">
+                  <label for="{{ form.anonymous.id_for_label }}">Anonymous</label>
+                  {{ form.anonymous }}
+              </div>
+              <br>
+              
+              <button class="btn btn-primary btn-lg w-100" type="submit">Save Feedback</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  
 
 </div>
 
@@ -138,12 +196,6 @@
       } else {
         moreBtn.textContent = "Less";
       }
-    });
-  });
-
-  document.querySelectorAll('.rating-star').forEach(input => {
-    input.addEventListener('change', function() {
-      document.getElementById('ratingForm').submit();
     });
   });
 </script>

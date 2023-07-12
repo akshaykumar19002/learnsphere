@@ -5,13 +5,18 @@ import uuid
 
 
 class Feedback(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    RATING_CHOICES = [(i, str(i)) for i in range(1, 6)]  # 1-5 rating
+
     course_id = models.IntegerField(null=True, blank=True)
-    rating = models.IntegerField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    comment = models.TextField()
+    rating = models.PositiveSmallIntegerField(choices=RATING_CHOICES)
+    date_posted = models.DateTimeField(auto_now_add=True)
+    anonymous = models.BooleanField(default=False)
     
-    class Meta:
-        unique_together = ('user', 'course_id')
-    
+    def __str__(self):
+        return f'Feedback by {self.user.username} for {self.course_id}'
+
 
 class Course:
     

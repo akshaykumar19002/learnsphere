@@ -18,7 +18,7 @@ environ.Env.read_env()
 
 openai.api_key = env('OPENAI_API_KEY')
 
-def dashboard(request):
+def dashboard(request, searchTxt=None):
     courses = HybridRecommender().get_base_recommendations('programming')
     # Assuming df is your DataFrame
     course_list = []
@@ -53,25 +53,28 @@ def course_detail(request, course_id):
     user = User.objects.get(pk=request.user.id)
     feedbacks = Feedback.objects.filter(user=user, course_id=course_id)
     if request.method == 'POST':
-        feedback = FeedbackForm(request.POST)
-        if not feedback.is_valid():
-            user_rating = 0
-        user_rating = int(feedback.cleaned_data['rating'])
-        if len(feedbacks) == 0:
-            feedback = Feedback(user=user, course_id=course_id, rating=user_rating)
-            feedback.save()
-            Course().update_rating(course_id, user_rating, 0)
-        else:
-            feedbacks[0].rating = user_rating
-            Course().update_rating(course_id, feedbacks[0].rating, user_rating)
-            feedbacks[0].save()
-        return render(request, 'dashboard/course_detail.html', {'course': course, 'feedback': feedback})
-    if len(feedbacks) > 0:
-        feedback = FeedbackForm()
-        feedback.ratings = feedbacks[0].rating
+        form = FeedbackForm(request.POST)
+        user = User.objects.get(id=request.user.id)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.course_id = course_id
+            review.user = user
+            review.rating = 5 - review.rating + 1
+            review.save()
+            if len(feedbacks) == 0:
+                Course().update_rating(course_id, review.rating, 0)
+            else:
+                Course().update_rating(course_id, feedbacks[0].rating, review.rating)
+            return redirect('dashboard:course_detail', course_id=course_id)
     else:
-        feedback = FeedbackForm()
-    return render(request, 'dashboard/course_detail.html', {'course': course, 'feedback': feedback})
+        if len(feedbacks) == 0:
+            form = FeedbackForm()
+            feedbackProvided = False
+        else:
+            feedbackProvided = True
+            form = FeedbackForm(instance=feedbacks[0])
+        feedbacks = Feedback.objects.filter(course_id=course_id)
+    return render(request, 'dashboard/course_detail.html', {'course': course, 'form': form, 'feedbacks': feedbacks, 'feedback': feedbacks, 'feedbackProvided': feedbackProvided})
 
 
 def chat_view(request):
