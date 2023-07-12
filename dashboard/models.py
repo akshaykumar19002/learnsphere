@@ -41,6 +41,12 @@ class Course:
         course = self.get()
         self.mongoClient.create(course)
         
+    def search(self, searchTxt):
+        courses = []
+        for course in self.mongoClient.search(searchTxt)[:10]:
+            courses.append(self.get_by_id(course['id'])[0])
+        return courses
+        
     def get_all(self):
         return self.mongoClient.read()
 

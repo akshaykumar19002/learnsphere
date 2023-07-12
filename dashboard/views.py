@@ -19,22 +19,27 @@ environ.Env.read_env()
 openai.api_key = env('OPENAI_API_KEY')
 
 def dashboard(request, searchTxt=None):
-    courses = HybridRecommender().get_base_recommendations('programming')
-    # Assuming df is your DataFrame
-    course_list = []
-    for index, row in courses.iterrows():
-        course = Course()
-        course.set(
-            id = row['id'],
-            course_name=row['course_name'],
-            description=row['description'],
-            course_url=row['course_url'],
-            rating=row['rating'],
-            review_count=row['review_count'],
-            website=row['website'],
-            topics=row['topics']
-        )
-        course_list.append(course)
+    if searchTxt is not None:
+        print('searching')
+        print(searchTxt)
+        course_list = Course().search(searchTxt)
+    else:
+        courses = HybridRecommender().get_base_recommendations('programming')
+        # Assuming df is your DataFrame
+        course_list = []
+        for index, row in courses.iterrows():
+            course = Course()
+            course.set(
+                id = row['id'],
+                course_name=row['course_name'],
+                description=row['description'],
+                course_url=row['course_url'],
+                rating=row['rating'],
+                review_count=row['review_count'],
+                website=row['website'],
+                topics=row['topics']
+            )
+            course_list.append(course)
     if request.user.is_authenticated:
         user = User.objects.get(pk=request.user.id)
         wishlist = Wishlist.objects.filter(user=user)

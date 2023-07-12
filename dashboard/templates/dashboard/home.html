@@ -6,10 +6,6 @@
 
 {% load extra_filters %}
 
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-
 <style>
 
     .bottom-right-button {
@@ -71,13 +67,15 @@
                             {% endif %}
                             <p class="card-text">{{ course.website | capfirst }}</span>
                             <br>
-                            {% for i in course.rating|times %}
-                                <span class="star gold">&#9733;</span>
-                            {% endfor %}
-                            <!-- Generate unfilled stars -->
-                            {% for i in course.rating|range_to %}
-                                <span class="star">&#9733;</span>
-                            {% endfor %}
+                            {% if course.rating %}
+                                {% for i in course.rating|times %}
+                                    <span class="star gold">&#9733;</span>
+                                {% endfor %}
+                                <!-- Generate unfilled stars -->
+                                {% for i in course.rating|range_to %}
+                                    <span class="star">&#9733;</span>
+                                {% endfor %}
+                            {% endif %}
                             {% if course.id in wishlist.course_ids %}
                                 <a href="#"><i class="fa fa-heart float-end heart-icon filled" id="heart{{ course.id }}" onclick="toggleWishlist({{ course.id }})"></i></a>
                             {% else %}

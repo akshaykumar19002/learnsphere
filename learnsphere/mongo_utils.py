@@ -1,4 +1,4 @@
-from pymongo import MongoClient
+from pymongo import MongoClient, TEXT
 
 class MongoDB:
     
@@ -28,3 +28,14 @@ class MongoDB:
 
     def delete(self, query):
         return self.collection.delete_one(query)
+    
+    def search(self, searchTxt):
+        pattern = f"(?i){searchTxt}"
+        return self.collection.find({
+            "$or": [
+                {"course_name": {"$regex": pattern}},
+                {"description": {"$regex": pattern}},
+                {"topics": {"$regex": pattern}}
+            ]
+        })
+        
