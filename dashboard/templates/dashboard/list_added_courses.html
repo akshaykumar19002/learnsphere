@@ -1,7 +1,22 @@
 {% extends 'base.html' %}
-{% load extra_filters %}
+
+{% load static %}
+
 {% block content %}
+
+{% load extra_filters %}
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
 <style>
+
+    .bottom-right-button {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+    }
 
     /* Create stars */
     .star {
@@ -19,23 +34,17 @@
     
     .heart-icon.filled {
         color: red;
-    }  
+    }    
 
 </style>
+
+<link rel="stylesheet" href="{% static 'css/modal-config.css' %}">
+
 <div class="container-fluid">
-    
-    <h2>Categories</h2>
-    <br>
     <div class="row">
-        <div class="col-3">
-            <div class="list-group">
-                {% for topic in topics %}
-                    <a href="{% url 'dashboard:view_category' topic.name %}" class="list-group-item list-group-item-action">{{ topic.name }}</a>
-                {% endfor %}
-            </div>
-        </div>
         {% csrf_token %}
-        <div class="col-9">
+        <div class="col-12">
+            <h1>My Courses</h1>
 
             <div class="row">
                  {% for course in courses %}
@@ -55,68 +64,46 @@
                             {% endif %}
                             <p class="card-text">{{ course.website | capfirst }}</span>
                             <br>
-                            {% if course.rating %}
-                                {% for i in course.rating|times %}
-                                    <span class="star gold">&#9733;</span>
-                                {% endfor %}
-                                <!-- Generate unfilled stars -->
-                                {% for i in course.rating|range_to %}
-                                    <span class="star">&#9733;</span>
-                                {% endfor %}
-                            {% endif %}
+                            {% for i in course.rating|times %}
+                                <span class="star gold">&#9733;</span>
+                            {% endfor %}
+                            <!-- Generate unfilled stars -->
+                            {% for i in course.rating|range_to %}
+                                <span class="star">&#9733;</span>
+                            {% endfor %}
                             </div>
                             <div class="col-md-1">
-                            {% if user.is_authenticated %}
-                                {% if myCourses is None %}
-                                    <a href="#" class="float-end"><i id="my-course{{course.id}}" class="fa fa-2x fa-plus-circle" aria-hidden="true" onclick="toggleMyCourses({{ course.id }})"></i></a>
-                                {% elif course.id not in myCourses.course_ids %}
-                                    <a href="#" class="float-end"><i id="my-course{{course.id}}" class="fa fa-2x fa-plus-circle" aria-hidden="true" onclick="toggleMyCourses({{ course.id }})"></i></a>
-                                {% else %}
-                                    <a href="#" class="my-course float-end"><i id="my-course{{course.id}}" class="fa fa-2x fa-times" aria-hidden="true" onclick="toggleMyCourses({{ course.id }})"></i></a>
+                                {% if user.is_authenticated %}
+                                    {% if myCourses is None %}
+                                        <a href="#" class="float-end"><i id="my-course{{course.id}}" class="fa fa-2x fa-plus-circle" aria-hidden="true" onclick="toggleMyCourses({{ course.id }})"></i></a>
+                                    {% elif course.id not in myCourses.course_ids %}
+                                        <a href="#" class="float-end"><i id="my-course{{course.id}}" class="fa fa-2x fa-plus-circle" aria-hidden="true" onclick="toggleMyCourses({{ course.id }})"></i></a>
+                                    {% else %}
+                                        <a href="#" class="my-course float-end"><i id="my-course{{course.id}}" class="fa fa-2x fa-times" aria-hidden="true" onclick="toggleMyCourses({{ course.id }})"></i></a>
+                                    {% endif %}
+                                    <br><br>
+                                    {% if course.id in wishlist.course_ids %}
+                                        <a href="#"><i class="fa fa-2x fa-heart float-end heart-icon filled" id="heart{{ course.id }}" onclick="toggleWishlist({{ course.id }})"></i></a>
+                                    {% else %}
+                                        <a href="#"><i class="fa fa-2x fa-heart float-end heart-icon" id="heart{{ course.id }}" onclick="toggleWishlist({{ course.id }})"></i></a>
+                                    {% endif %}
                                 {% endif %}
-                                <br><br>
-                                {% if course.id in wishlist.course_ids %}
-                                    <a href="#"><i class="fa fa-2x fa-heart float-end heart-icon filled" id="heart{{ course.id }}" onclick="toggleWishlist({{ course.id }})"></i></a>
-                                {% else %}
-                                    <a href="#"><i class="fa fa-2x fa-heart float-end heart-icon" id="heart{{ course.id }}" onclick="toggleWishlist({{ course.id }})"></i></a>
-                                {% endif %}
-                            {% endif %}
                             </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                {% empty %}
+                    <br><br><br>
+                    <h4>No courses added so far.</h4>
                 {% endfor %}
             </div>
         </div>
     </div>
 </div>
 
-</div>
-
 <script>
-
-    document.addEventListener('DOMContentLoaded', function() {
-        var topic = "{{ topic }}";  // Django context variable
-        var listGroupItems = document.querySelectorAll('.list-group-item');
-
-        if (topic) {
-            // If 'topic' is present, find the link with the corresponding name and click it
-            for (var i = 0; i < listGroupItems.length; i++) {
-                if (listGroupItems[i].textContent == topic) {
-                    //listGroupItems[i].click();
-                    listGroupItems[i].classList.add('active');
-                    break;
-                }
-            }
-        } else {
-            // If 'topic' is not present, click the first link
-            if (listGroupItems.length > 0) {
-                listGroupItems[0].click();
-            }
-        }
-    });    
-
+    
     function toggleWishlist(courseId) {
         var heart = document.getElementById('heart' + courseId);
         var url = "/wishlist/add_remove/" + courseId;
@@ -133,14 +120,15 @@
             if (data.status == 'added') {
                 heart.classList.add('filled');
             } else if (data.status == 'removed') {
+                window.location.reload();
                 heart.classList.remove('filled');
             }
         })
         .catch((error) => {
             console.error('Error:', error);
         });
-    } 
-
+    }  
+    
     function toggleMyCourses(courseId) {
         var url = "/my_courses/add/" + courseId;
         var course = document.getElementById('my-course' + courseId);
@@ -159,6 +147,7 @@
             } else if (data.status == 'removed') {
                 course.classList.add('fa-plus-circle');
                 course.classList.remove('fa-times');
+                window.location.reload();
             }
         })
         .catch((error) => {
@@ -168,4 +157,4 @@
 
 </script>
 
-{% endblock %}
+{% endblock content %}

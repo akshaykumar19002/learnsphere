@@ -42,13 +42,18 @@ def dashboard(request, searchTxt=None):
     if request.user.is_authenticated:
         user = User.objects.get(pk=request.user.id)
         wishlist = Wishlist.objects.filter(user=user)
+        myCourses = MyCourses.objects.filter(user=user)
         if len(wishlist) > 0:
             wishlist = wishlist[0]
         else:
             wishlist = None
+        if len(myCourses) > 0:
+            myCourses = myCourses[0]
+        else:
+            myCourses = None
     else:
         wishlist = None
-    return render(request, 'dashboard/home.html', {'courses': course_list, 'wishlist': wishlist})
+    return render(request, 'dashboard/home.html', {'courses': course_list, 'wishlist': wishlist, 'myCourses': myCourses})
 
 
 @login_required(login_url='login')
@@ -203,6 +208,20 @@ def wishlist(request):
 
 def categories(request, topic=None):
     topics = Topic.objects.all()
+    if request.user.is_authenticated:
+        user = User.objects.get(pk=request.user.id)
+        wishlist = Wishlist.objects.filter(user=user)
+        myCourses = MyCourses.objects.filter(user=user)
+        if len(wishlist) > 0:
+            wishlist = wishlist[0]
+        else:
+            wishlist = None
+        if len(myCourses) > 0:
+            myCourses = myCourses[0]
+        else:
+            myCourses = None
+    else:
+        wishlist = None
     if topic:
         courses = HybridRecommender().get_base_recommendations(topic.lower())
         # Assuming df is your DataFrame
@@ -220,5 +239,43 @@ def categories(request, topic=None):
                 topics=row['topics']
             )
             course_list.append(course)
-        return render(request, 'dashboard/categories.html', {'courses': course_list, 'topics': topics, 'topic': topic})
+        return render(request, 'dashboard/categories.html', {'courses': course_list, 'topics': topics, 'topic': topic, 'wishlist': wishlist, 'myCourses': myCourses})
     return render(request, 'dashboard/categories.html', {'topics': topics})
+
+
+@login_required(login_url='login')
+def toggle_course_in_my_courses(request, course_id):
+    if request.method == 'POST':
+        myCourses, created = MyCourses.objects.get_or_create(user=request.user)
+
+        if myCourses.has_course(course_id):
+            myCourses.remove_course(course_id)
+            response = {'status': 'removed'}
+        else:
+            myCourses.add_course(course_id)
+            response = {'status': 'added'}
+
+        return JsonResponse(response)
+
+    else:
+        return JsonResponse({'status': 'bad request'}, status=400)
+
+
+@login_required(login_url='login')
+def my_courses(request):
+    myCourses = MyCourses.objects.filter(user=request.user)
+    user = User.objects.get(pk=request.user.id)
+    wishlist = Wishlist.objects.filter(user=user)
+    if len(wishlist) > 0:
+        wishlist = wishlist[0]
+    else:
+        wishlist = None
+    if len(myCourses) > 0:
+        myCourses = myCourses[0]
+        courses = []
+        for course_id in myCourses.course_ids:
+            courses.append(Course().get_by_id(course_id)[0])
+    else:
+        myCourses = None
+        courses = []
+    return render(request, 'dashboard/list_added_courses.html', {'myCourses': myCourses, 'courses': courses, 'wishlist': wishlist})

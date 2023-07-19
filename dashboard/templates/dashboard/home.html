@@ -56,6 +56,8 @@
                 <div class="col-sm-5 m-2 p-2">
                     <div class="card">
                         <div class="card-body">
+                            <div class="row">
+                            <div class="col-md-11">
                             {% if user.is_authenticated %}
                                 <a href="{% url 'dashboard:course_detail' course_id=course.id %}"><h5 class="card-title">{{ course.course_name }}</h5></a>
                             {% else %}
@@ -76,13 +78,25 @@
                                     <span class="star">&#9733;</span>
                                 {% endfor %}
                             {% endif %}
-                            {% if user.is_authenticated %}
-                                {% if course.id in wishlist.course_ids %}
-                                    <a href="#"><i class="fa fa-heart float-end heart-icon filled" id="heart{{ course.id }}" onclick="toggleWishlist({{ course.id }})"></i></a>
-                                {% else %}
-                                    <a href="#"><i class="fa fa-heart float-end heart-icon" id="heart{{ course.id }}" onclick="toggleWishlist({{ course.id }})"></i></a>
+                            </div>
+                            <div class="col-md-1">
+                                {% if user.is_authenticated %}
+                                    {% if myCourses is None %}
+                                        <a href="#" class="float-end"><i id="my-course{{course.id}}" class="fa fa-2x fa-plus-circle" aria-hidden="true" onclick="toggleMyCourses({{ course.id }})"></i></a>
+                                    {% elif course.id not in myCourses.course_ids %}
+                                        <a href="#" class="float-end"><i id="my-course{{course.id}}" class="fa fa-2x fa-plus-circle" aria-hidden="true" onclick="toggleMyCourses({{ course.id }})"></i></a>
+                                    {% else %}
+                                        <a href="#" class="my-course float-end"><i id="my-course{{course.id}}" class="fa fa-2x fa-times" aria-hidden="true" onclick="toggleMyCourses({{ course.id }})"></i></a>
+                                    {% endif %}
+                                    <br><br>
+                                    {% if course.id in wishlist.course_ids %}
+                                        <a href="#"><i class="fa fa-2x fa-heart float-end heart-icon filled" id="heart{{ course.id }}" onclick="toggleWishlist({{ course.id }})"></i></a>
+                                    {% else %}
+                                        <a href="#"><i class="fa fa-2x fa-heart float-end heart-icon" id="heart{{ course.id }}" onclick="toggleWishlist({{ course.id }})"></i></a>
+                                    {% endif %}
                                 {% endif %}
-                            {% endif %}
+                            </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -251,7 +265,32 @@
         .catch((error) => {
             console.error('Error:', error);
         });
-    }        
+    }    
+    
+    function toggleMyCourses(courseId) {
+        var url = "/my_courses/add/" + courseId;
+        var course = document.getElementById('my-course' + courseId);
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status == 'added') {
+                course.classList.remove('fa-plus-circle');
+                course.classList.add('fa-times');
+            } else if (data.status == 'removed') {
+                course.classList.add('fa-plus-circle');
+                course.classList.remove('fa-times');
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    } 
 
 </script>
 

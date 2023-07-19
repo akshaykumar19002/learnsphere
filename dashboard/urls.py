@@ -12,5 +12,7 @@ urlpatterns = [
     path('wishlist/', views.wishlist, name='wishlist'),
     path('search/<str:searchTxt>', views.dashboard, name='search'),
     path('categories/', views.categories, name='categories'),
-    path('categories/<str:topic>/', views.categories, name='view_category')
+    path('categories/<str:topic>/', views.categories, name='view_category'),
+    path('my_courses/add/<int:course_id>', views.toggle_course_in_my_courses, name='toggle_course_in_my_courses'),
+    path('my_courses/', views.my_courses, name='my_courses'),
 ]
