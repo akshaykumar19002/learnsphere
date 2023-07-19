@@ -35,8 +35,9 @@ class HybridRecommender:
         # Define a new feature 'score' and calculate its value with `weighted_rating()`
         self.df['score'] = self.df.apply(lambda x: self.weighted_rating(x, m, C), axis=1)
 
-        # Return the top 10 most popular courses, grouped by website and sorted by the score
-        return self.df.groupby('website').apply(lambda x: x.nlargest(10, 'score')).reset_index(drop=True)
+        # Return the top 15 most popular courses, grouped by website and sorted by the score
+        return self.df.groupby('website').apply(lambda x: x.nlargest(4, 'score')).reset_index(drop=True)
+        # return self.df.nlargest(15, 'score').reset_index(drop=True)
     
     def get_recommendations(self, interest, course_name):
         topic_of_interest = interest.lower()

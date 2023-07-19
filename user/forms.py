@@ -86,7 +86,9 @@ class UserPreferencesForm(forms.Form):
         print(self.cleaned_data )
         topics = self.cleaned_data.get('topics')
         print(topics)
-        if topics is None or len(topics) < 3:
-            raise forms.ValidationError("You must select at least 3 topics.")
+        if topics is None or len(topics) < 1:
+            raise forms.ValidationError("You must select at least 1 topics.")
+        if topics is not None and len(topics) > 3:
+            raise forms.ValidationError("You must select at most 3 topics.")
         return topics
 

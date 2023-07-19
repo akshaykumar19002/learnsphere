@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 
 from .models import *
+from user.models import *
 import openai
 import json
 import re
@@ -198,3 +199,26 @@ def wishlist(request):
         wishlist = None
         courses = []
     return render(request, 'dashboard/wishlist.html', {'wishlist': wishlist, 'courses': courses})
+
+
+def categories(request, topic=None):
+    topics = Topic.objects.all()
+    if topic:
+        courses = HybridRecommender().get_base_recommendations(topic.lower())
+        # Assuming df is your DataFrame
+        course_list = []
+        for index, row in courses.iterrows():
+            course = Course()
+            course.set(
+                id = row['id'],
+                course_name=row['course_name'],
+                description=row['description'],
+                course_url=row['course_url'],
+                rating=row['rating'],
+                review_count=row['review_count'],
+                website=row['website'],
+                topics=row['topics']
+            )
+            course_list.append(course)
+        return render(request, 'dashboard/categories.html', {'courses': course_list, 'topics': topics, 'topic': topic})
+    return render(request, 'dashboard/categories.html', {'topics': topics})

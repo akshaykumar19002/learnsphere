@@ -42,8 +42,8 @@
             <div class="list-group">
                 <a href="{% url 'dashboard:dashboard' %}" class="list-group-item list-group-item-action active">Dashboard</a>
                 <a href="{% url 'dashboard:wishlist' %}" class="list-group-item list-group-item-action">My wishlist</a>
-                <a href="#" style="pointer-events: none" class="list-group-item list-group-item-action">Completed Courses</a>
-                <a href="#" style="pointer-events: none" class="list-group-item list-group-item-action">Account Settings</a>
+                <a href="#" style="pointer-events: none" class="link-secondary list-group-item list-group-item-action">Completed Courses</a>
+                <a href="#" style="pointer-events: none" class="link-secondary list-group-item list-group-item-action">Account Settings</a>
             </div>
         </div>
         {% csrf_token %}
@@ -76,10 +76,12 @@
                                     <span class="star">&#9733;</span>
                                 {% endfor %}
                             {% endif %}
-                            {% if course.id in wishlist.course_ids %}
-                                <a href="#"><i class="fa fa-heart float-end heart-icon filled" id="heart{{ course.id }}" onclick="toggleWishlist({{ course.id }})"></i></a>
-                            {% else %}
-                                <a href="#"><i class="fa fa-heart float-end heart-icon" id="heart{{ course.id }}" onclick="toggleWishlist({{ course.id }})"></i></a>
+                            {% if user.is_authenticated %}
+                                {% if course.id in wishlist.course_ids %}
+                                    <a href="#"><i class="fa fa-heart float-end heart-icon filled" id="heart{{ course.id }}" onclick="toggleWishlist({{ course.id }})"></i></a>
+                                {% else %}
+                                    <a href="#"><i class="fa fa-heart float-end heart-icon" id="heart{{ course.id }}" onclick="toggleWishlist({{ course.id }})"></i></a>
+                                {% endif %}
                             {% endif %}
                         </div>
                     </div>

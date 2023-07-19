@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load extra_filters %}
+{% block content %}
+<style>
+
+    /* Create stars */
+    .star {
+        font-size: 2em;
+        color: #ccc;
+    }
+    /* Color stars */
+    .star.gold {
+        color: #E6B600;
+    }
+
+    .heart-icon {
+        color: grey;
+    }
+    
+    .heart-icon.filled {
+        color: red;
+    }  
+
+</style>
+<div class="container-fluid">
+    
+    <h2>Categories</h2>
+    <br>
+    <div class="row">
+        <div class="col-3">
+            <div class="list-group">
+                {% for topic in topics %}
+                    <a href="{% url 'dashboard:view_category' topic.name %}" class="list-group-item list-group-item-action">{{ topic.name }}</a>
+                {% endfor %}
+            </div>
+        </div>
+        {% csrf_token %}
+        <div class="col-9">
+
+            <div class="row">
+                 {% for course in courses %}
+                <div class="col-sm-5 m-2 p-2">
+                    <div class="card">
+                        <div class="card-body">
+                            {% if user.is_authenticated %}
+                                <a href="{% url 'dashboard:course_detail' course_id=course.id %}"><h5 class="card-title">{{ course.course_name }}</h5></a>
+                            {% else %}
+                                {% if course.website == 'udemy' %}
+                                    <a href="https://udemy.com{{ course.course_url }}"><h5 class="card-title">{{ course.course_name }}</h5></a>
+                                {% else %}
+                                    <a href="{{course.course_url}}"><h5 class="card-title">{{ course.course_name }}</h5></a>
+                                {% endif %}
+                            {% endif %}
+                            <p class="card-text">{{ course.website | capfirst }}</span>
+                            <br>
+                            {% if course.rating %}
+                                {% for i in course.rating|times %}
+                                    <span class="star gold">&#9733;</span>
+                                {% endfor %}
+                                <!-- Generate unfilled stars -->
+                                {% for i in course.rating|range_to %}
+                                    <span class="star">&#9733;</span>
+                                {% endfor %}
+                            {% endif %}
+                            {% if user.is_authenticated %}
+                                {% if course.id in wishlist.course_ids %}
+                                    <a href="#"><i class="fa fa-heart float-end heart-icon filled" id="heart{{ course.id }}" onclick="toggleWishlist({{ course.id }})"></i></a>
+                                {% else %}
+                                    <a href="#"><i class="fa fa-heart float-end heart-icon" id="heart{{ course.id }}" onclick="toggleWishlist({{ course.id }})"></i></a>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<script>
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var topic = "{{ topic }}";  // Django context variable
+        var listGroupItems = document.querySelectorAll('.list-group-item');
+
+        if (topic) {
+            // If 'topic' is present, find the link with the corresponding name and click it
+            for (var i = 0; i < listGroupItems.length; i++) {
+                if (listGroupItems[i].textContent == topic) {
+                    //listGroupItems[i].click();
+                    listGroupItems[i].classList.add('active');
+                    break;
+                }
+            }
+        } else {
+            // If 'topic' is not present, click the first link
+            if (listGroupItems.length > 0) {
+                listGroupItems[0].click();
+            }
+        }
+    });    
+
+</script>
+
+{% endblock %}

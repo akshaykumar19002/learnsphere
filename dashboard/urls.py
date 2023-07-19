@@ -10,5 +10,7 @@ urlpatterns = [
     path('chat/', views.chat_view, name='chat'),
     path('wishlist/add_remove/<int:course_id>', views.toggle_course_in_wishlist, name='toggle_course_in_wishlist'),
     path('wishlist/', views.wishlist, name='wishlist'),
-    path('search/<str:searchTxt>', views.dashboard, name='search')
+    path('search/<str:searchTxt>', views.dashboard, name='search'),
+    path('categories/', views.categories, name='categories'),
+    path('categories/<str:topic>/', views.categories, name='view_category')
 ]

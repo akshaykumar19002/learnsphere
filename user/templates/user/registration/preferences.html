@@ -12,7 +12,7 @@
 
 <div class="container-fluid p-5 row">
 
-    <div class="col-md-7 offset-md-2">
+    <div class="col-md-9 offset-md-1">
         <form method="post">
             {% csrf_token %}
 
@@ -34,7 +34,7 @@
 
             <div class="row" data-topic-name="{{ form.topics.name }}">
               {% for checkbox in form.topics %}
-                  <div class="form-check checkbox-container col-3 m-3">
+                  <div class="form-check checkbox-container col-md-3 my-2">
                       {{ checkbox.tag }}
                       <label for="{{ checkbox.id_for_label }}">
                           {{ checkbox.choice_label }}
