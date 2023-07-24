@@ -55,9 +55,19 @@ class Course:
     
     def get_by_topic(self, topic):
         return self.mongoClient.read({'topics': {'$regex': topic, '$options': 'i'}})
+    
+    def get_by_topics(self, topics):
+        topics = '|'.join(topics)
+        return self.mongoClient.read({'topics': {'$regex': topics, '$options': 'i'}})
 
     def get_by_id(self, id):
         return self.mongoClient.read({'id': id})
+    
+    def get_by_ids(self, ids):
+        return self.mongoClient.read({'id': {'$in': ids}})
+    
+    def get_topic_by_ids(self, course_ids):
+        return self.mongoClient.read_column('topics', {'id': {'$in': course_ids}})
     
     def update(self):
         self.mongoClient.update({'id': self.id}, self.get())

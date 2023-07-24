@@ -23,7 +23,8 @@ def dashboard(request, searchTxt=None):
     if searchTxt is not None:
         course_list = Course().search(searchTxt)
     else:
-        courses = HybridRecommender().get_base_recommendations('programming')
+        myCourses = MyCourses.objects.filter(user=request.user).first()
+        courses = HybridRecommender().get_recommendation_for_added_courses(myCourses.course_ids)
         # Assuming df is your DataFrame
         course_list = []
         for index, row in courses.iterrows():
