@@ -12,6 +12,7 @@ from django.contrib import messages
 
 from .forms import *
 from .token import user_tokenizer_generate
+from dashboard.tasks import generate_recommendations_for_user_prefs
 from .models import Topic, Job, UserPreference
 
 class Register(View):
@@ -160,6 +161,7 @@ def user_preferences(request):
             user_pref.topics.set(topics)
             user_pref.dream_job = dream_job
             user_pref.save()
+            generate_recommendations_for_user_prefs.delay()
             messages.success(request, 'Your preferences have been saved successfully.')
             return redirect('dashboard:dashboard')
         else:

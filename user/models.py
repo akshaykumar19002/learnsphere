@@ -17,6 +17,7 @@ class UserPreference(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     topics = models.ManyToManyField(Topic)
     dream_job = models.ForeignKey(Job, on_delete=models.SET_NULL, null=True)
+    recommended_courses = models.JSONField(default=list)
 
     def __str__(self):
         return f'Preferences of {self.user.username}'

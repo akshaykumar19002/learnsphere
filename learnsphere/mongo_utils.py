@@ -9,7 +9,6 @@ class MongoDB:
     def initialize(uri, db_name):
         MongoDB.client = MongoClient(uri)
         MongoDB.db = MongoDB.client[db_name]
-        print("MongoDB client has been initialized!")
     
     def __init__(self, collection_name):
         self.collection = MongoDB.db[collection_name]

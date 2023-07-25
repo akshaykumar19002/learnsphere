@@ -122,6 +122,7 @@ class Wishlist(models.Model):
 class MyCourses(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     course_ids = models.JSONField(default=list)
+    recommended_courses = models.JSONField(default=list)
     
     def add_course(self, course_id):
         if course_id not in self.course_ids:

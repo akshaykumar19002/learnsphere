@@ -21,7 +21,7 @@ class HybridRecommender:
         self.df = pd.DataFrame(list(Course().get_by_topic(topic)))
         return self.df[self.df['topics'].str.contains(topic, na=False)]
     
-    def get_base_recommendations(self, interest):
+    def get_base_recommendations(self, interest:str):
         topic_of_interest = interest.lower()
         self.df = self.filter_courses_by_topic(topic_of_interest)
         self.df['topics'] = self.df['topics'].fillna('')
@@ -39,7 +39,7 @@ class HybridRecommender:
         return self.df.groupby('website').apply(lambda x: x.nlargest(4, 'score')).reset_index(drop=True)
         # return self.df.nlargest(15, 'score').reset_index(drop=True)
 
-    def get_base_recommendations(self, limit=10):
+    def get_base_recommendations_limited(self, limit:int=10):
         self.df['topics'] = self.df['topics'].fillna('')
 
         # Calculate mean rating across all courses
@@ -131,7 +131,7 @@ class HybridRecommender:
         # Filter courses by the provided topics
         topics = self.get_list_of_topics(course_ids)
         self.df = self.filter_courses_by_topics(topics)
-        self.df = self.get_base_recommendations(limit=50)
+        self.df = self.get_base_recommendations_limited(limit=200)
         
         self.df = self.df[self.df['topics'].apply(lambda x: any(topic in x for topic in topics))]
         

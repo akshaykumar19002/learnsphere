@@ -13,6 +13,8 @@ import json
 import re
 import environ
 
+from .tasks import *
+
 # Initialize environment variables
 env = environ.Env()
 environ.Env.read_env()
@@ -23,8 +25,14 @@ def dashboard(request, searchTxt=None):
     if searchTxt is not None:
         course_list = Course().search(searchTxt)
     else:
-        myCourses = MyCourses.objects.filter(user=request.user).first()
-        courses = HybridRecommender().get_recommendation_for_added_courses(myCourses.course_ids)
+        if request.user.is_authenticated:
+            myCourses = MyCourses.objects.filter(user=request.user).first()
+            if myCourses is not None and myCourses.course_ids is not None and len(myCourses.course_ids) > 0:
+                courses = HybridRecommender().get_recommendation_for_added_courses(myCourses.course_ids)
+            else:
+                courses = HybridRecommender().get_base_recommendations("programming")
+        else:
+            courses = HybridRecommender().get_base_recommendations("programming")
         # Assuming df is your DataFrame
         course_list = []
         for index, row in courses.iterrows():
@@ -53,6 +61,7 @@ def dashboard(request, searchTxt=None):
         else:
             myCourses = None
     else:
+        myCourses = None
         wishlist = None
     return render(request, 'dashboard/home.html', {'courses': course_list, 'wishlist': wishlist, 'myCourses': myCourses})
 
@@ -251,9 +260,11 @@ def toggle_course_in_my_courses(request, course_id):
 
         if myCourses.has_course(course_id):
             myCourses.remove_course(course_id)
+            generate_recommendations_for_added_courses.delay()
             response = {'status': 'removed'}
         else:
             myCourses.add_course(course_id)
+            generate_recommendations_for_added_courses.delay()
             response = {'status': 'added'}
 
         return JsonResponse(response)
