@@ -25,29 +25,8 @@ def dashboard(request, searchTxt=None):
     if searchTxt is not None:
         course_list = Course().search(searchTxt)
     else:
-        if request.user.is_authenticated:
-            myCourses = MyCourses.objects.filter(user=request.user).first()
-            if myCourses is not None and myCourses.course_ids is not None and len(myCourses.course_ids) > 0:
-                courses = HybridRecommender().get_recommendation_for_added_courses(myCourses.course_ids)
-            else:
-                courses = HybridRecommender().get_base_recommendations("programming")
-        else:
-            courses = HybridRecommender().get_base_recommendations("programming")
-        # Assuming df is your DataFrame
-        course_list = []
-        for index, row in courses.iterrows():
-            course = Course()
-            course.set(
-                id = row['id'],
-                course_name=row['course_name'],
-                description=row['description'],
-                course_url=row['course_url'],
-                rating=row['rating'],
-                review_count=row['review_count'],
-                website=row['website'],
-                topics=row['topics']
-            )
-            course_list.append(course)
+        courses = HybridRecommender().get_base_recommendations("programming")
+        course_list = get_course_list(courses)
     if request.user.is_authenticated:
         user = User.objects.get(pk=request.user.id)
         wishlist = Wishlist.objects.filter(user=user)
@@ -65,6 +44,51 @@ def dashboard(request, searchTxt=None):
         wishlist = None
     return render(request, 'dashboard/home.html', {'courses': course_list, 'wishlist': wishlist, 'myCourses': myCourses})
 
+
+def get_course_list(courses):
+    course_list = []
+    for _, row in courses.iterrows():
+        course = Course()
+        course.set(
+            id = row['id'],
+            course_name=row['course_name'],
+            description=row['description'],
+            course_url=row['course_url'],
+            rating=row['rating'],
+            review_count=row['review_count'],
+            website=row['website'],
+            topics=row['topics']
+        )
+        course_list.append(course)
+    return course_list
+    
+@login_required(login_url='login')
+def filter_courses(request, type, keyword=None):
+    user = User.objects.get(pk=request.user.id)
+    type = type.lower().strip()
+    wishlist = Wishlist.objects.filter(user=user).first()
+    user_prefs = UserPreference.objects.filter(user=user).first()
+    myCourses = MyCourses.objects.filter(user=user).first()
+    course_list = []
+    if type == 'mycourses':
+        if myCourses is not None and myCourses.recommended_courses is not None and len(myCourses.recommended_courses) > 0:
+            course_ids = myCourses.recommended_courses
+            course_list = Course().get_by_ids(course_ids)
+    elif type == 'wishlist':
+        if wishlist is not None and wishlist.recommended_courses is not None and len(wishlist.recommended_courses) > 0:
+            course_ids = wishlist.recommended_courses
+            course_list = Course().get_by_ids(course_ids)
+    elif type == 'preferences':
+        if user_prefs is not None and user_prefs.recommended_courses is not None and len(user_prefs.recommended_courses) > 0:
+            course_ids = user_prefs.recommended_courses
+            course_list = Course().get_by_ids(course_ids)
+    elif type == 'keyword':
+        if keyword is not None:
+            courses = HybridRecommender().get_base_recommendations(keyword.lower())
+            course_list = get_course_list(courses)
+    return render(request, 'dashboard/home.html', {'courses': course_list, 'wishlist': wishlist, 'myCourses': myCourses, 'type': type})
+
+    
 
 @login_required(login_url='login')
 def course_detail(request, course_id):
@@ -101,6 +125,8 @@ def chat_view(request):
         data = json.loads(request.body.decode("utf-8"))
         query = data.get('message').lower().strip()
         print(query)
+        if len(query.split(' ')) > 3:
+            return JsonResponse({"message": 'Please provide a valid prompt.'})
 
         # get current session
         session_id = request.session.get('chat_session')
@@ -129,6 +155,8 @@ def chat_view(request):
             {"role": "system", "content": "Also, only provide responses in bullet points and also no lead-in text."},
         ]
         
+        query = "Kindly recommend/suggest me different courses in below mentioned formats for the following topic: " + query
+        
         if 'recommend' not in query and 'suggest' not in query:
             messages.append({"role": "user", "content": "Response should be less than 200 characters."})
         else:
@@ -150,7 +178,7 @@ def chat_view(request):
         chat.save()
         
         if 'NO' in bot_response.upper():
-            return JsonResponse({"message": 'Please provide a valid prompt.'})
+            return JsonResponse({"message": 'Please provide a valid keyword(s).'})
         # get course details from bot response
         if 'recommend' in query or 'suggest' in query:
             response = parse_bot_response(bot_response)
@@ -191,9 +219,11 @@ def toggle_course_in_wishlist(request, course_id):
 
         if wishlist.has_course(course_id):
             wishlist.remove_course(course_id)
+            generate_recommendations_for_wishlist.delay()
             response = {'status': 'removed'}
         else:
             wishlist.add_course(course_id)
+            generate_recommendations_for_wishlist.delay()
             response = {'status': 'added'}
 
         return JsonResponse(response)
@@ -218,23 +248,18 @@ def wishlist(request):
 
 def categories(request, topic=None):
     topics = Topic.objects.all()
+    wishlist = None
+    myCourses = None
     if request.user.is_authenticated:
         user = User.objects.get(pk=request.user.id)
         wishlist = Wishlist.objects.filter(user=user)
         myCourses = MyCourses.objects.filter(user=user)
         if len(wishlist) > 0:
             wishlist = wishlist[0]
-        else:
-            wishlist = None
         if len(myCourses) > 0:
             myCourses = myCourses[0]
-        else:
-            myCourses = None
-    else:
-        wishlist = None
     if topic:
         courses = HybridRecommender().get_base_recommendations(topic.lower())
-        # Assuming df is your DataFrame
         course_list = []
         for index, row in courses.iterrows():
             course = Course()
