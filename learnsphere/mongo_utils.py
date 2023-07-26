@@ -17,7 +17,7 @@ class MongoDB:
         return self.collection.insert_one(data)
 
     def read(self, query={}):
-        return self.collection.find(query).limit(40000)
+        return self.collection.find(query)
 
     def read_column(self, column, query={}):
         return self.collection.find(query, {'_id': 0, column: 1})

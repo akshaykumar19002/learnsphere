@@ -40,16 +40,20 @@
     <div class="row">
         <div class="col-3">
             <div class="list-group">
-                <a href="{% url 'dashboard:dashboard' %}" class="list-group-item list-group-item-action active">Dashboard</a>
-                <a href="{% url 'dashboard:wishlist' %}" class="list-group-item list-group-item-action">My wishlist</a>
-                <a href="#" style="pointer-events: none" class="link-secondary list-group-item list-group-item-action">Completed Courses</a>
-                <a href="#" style="pointer-events: none" class="link-secondary list-group-item list-group-item-action">Account Settings</a>
+                <a href="{% url 'dashboard:dashboard' %}" class="list-group-item list-group-item-action {% if type is None %}active{% endif %}">Dashboard</a>
+                <a href="{% url 'dashboard:filter_courses' 'mycourses' %}" class="list-group-item list-group-item-action {% if type == 'mycourses' %}active{% endif %}">Filter by My Courses</a>
+                <a href="{% url 'dashboard:filter_courses' 'wishlist' %}" class="list-group-item list-group-item-action {% if type == 'wishlist' %}active{% endif %}">Filter by My Wishlist</a>
+                <a href="{% url 'dashboard:filter_courses' 'preferences' %}" class="list-group-item list-group-item-action {% if type == 'preferences' %}active{% endif %}">Filter by My Preferences</a>
+                <a href="#" id="filter_keyword" class="list-group-item list-group-item-action {% if type == 'keyword' %}active{% endif %}">Filter by Keyword</a>
+                <input type="text" id="keyword_input" class="form-control" placeholder="Enter keyword" style="display: none; margin-top: 5px;">
             </div>
         </div>
         {% csrf_token %}
         <div class="col-9">
             <h1>Welcome to your dashboard</h1>
-            <span>These are the recommended courses for you:</span>
+            {% if course|length != 0 %}
+                <span>These are the recommended courses for you:</span>
+            {% endif %}
 
             <div class="row">
                  {% for course in courses %}
@@ -100,7 +104,20 @@
                         </div>
                     </div>
                 </div>
-                {% endfor %}
+                {% empty %}
+                    <div class="alert alert-warning" role="alert">
+                        <h4 class="alert-heading">No recommendations</h4>
+                        {% if type == 'mycourses' and myCourses is None %}
+                            <p>Please add some courses first .</p>
+                        {% elif type == 'wishlist' or wishlist is None and wishlist.recommended_courses|length == 0 %}
+                            <p>Please add some courses to wishlist first.</p>
+                        {% else %}
+                            <p>Unfortunately, we do not have any recommendations for you.</p>
+                            <hr>
+                            <p class="mb-0">Please check back after some time.</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
             </div>
         </div>
     </div>
@@ -139,6 +156,10 @@
                     <span>I can help you with finding the right course for you.</span>
                 </div>
                 <br>
+                <div class="bot-response">
+                    <span>Please provide the keyword for your course in 2-3 words.</span>
+                </div>
+                <br>
                 <br>
             </div>
             <div class="modal-footer">
@@ -160,6 +181,20 @@
 
 <script>
     $(document).ready(function() {
+
+        $("#filter_keyword").on("click", function(e){
+            e.preventDefault();
+            $("#keyword_input").toggle();
+        });
+
+        $("#keyword_input").on("keypress", function(e){
+            if(e.which == 13) {
+                let keyword = $(this).val();
+                let new_url = "{% url 'dashboard:filter_courses' 'keyword' %}" + "/" + keyword;
+                window.location.href = new_url;
+            }
+        });
+
         document.querySelector('#chatForm').addEventListener('submit', function(e) {
             e.preventDefault();
             let sendButton = document.querySelector('#send-button');
@@ -193,6 +228,7 @@
     }
     function addBotResponse(message) {
         $(".modal-body").append('<div class="bot-response"><span>' + message + '</span></div><br>');
+        $(".modal-body").append('<div class="bot-response"><span>Please provide the keyword for your next course search in 2-3 words.</span></div><br>');
     }
     function scrollToBottom() {
         const myModal = document.querySelector('.modal');

@@ -101,7 +101,7 @@ class HybridRecommender:
         # Compute a new score that takes into account both similarity and popularity
         # Let's give 50% importance to the similarity score and 50% to the popularity score
         top_courses['hybrid_score'] = top_courses['score'] * 0.5 + sim_scores[1][1] * 0.5
-
+        
         # Return the top 10 most similar courses, grouped by website and sorted by the new hybrid score
         return top_courses.groupby('website').apply(lambda x: x.sort_values('hybrid_score', ascending=False)).reset_index(drop=True)
         
@@ -124,7 +124,7 @@ class HybridRecommender:
         for course in courses:
             if course['id'] not in self.df['id'].values:
                 self.df = pd.concat([self.df, pd.DataFrame([course])], ignore_index=True)
-                course_names.append(course['course_name'])
+            course_names.append(course['course_name'])
         return course_names
         
     def get_recommendation_for_added_courses(self, course_ids):
@@ -187,10 +187,6 @@ class HybridRecommender:
 
             # Append the DataFrame to top_courses
             top_courses = pd.concat([top_courses, single_course_df])
-
-        # Compute a new score that takes into account both similarity and popularity
-        # Let's give 50% importance to the similarity score and 50% to the popularity score
-        # top_courses['hybrid_score'] = top_courses['score'] * 0.5 + sim_scores[1][1] * 0.5
-
+        
         # Return the top 10 most similar courses, grouped by website and sorted by the new hybrid score
         return top_courses.groupby('website').apply(lambda x: x.sort_values('hybrid_score', ascending=False)).reset_index(drop=True)
