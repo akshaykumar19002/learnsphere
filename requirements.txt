@@ -15,6 +15,6 @@ psycopg2-binary
 channels
 openai
 channels_redis
-uwsgi
 celery==5.2.7
 redis
+selenium

@@ -14,6 +14,7 @@ from .forms import *
 from .token import user_tokenizer_generate
 from dashboard.tasks import generate_recommendations_for_user_prefs
 from .models import Topic, Job, UserPreference
+from . import scrap
 
 class Register(View):
     
@@ -172,3 +173,17 @@ def user_preferences(request):
         else:
             form = UserPreferencesForm()
     return render(request, 'user/registration/preferences.html', {'form': form, 'topics': unused_topics})
+
+
+def get_skills(request, job):
+    # Call the function from your scrap.py script and pass the job name
+    elements_list = scrap.scrape_indeed(job)
+    job = Job.objects.filter(name__icontains=job).first()
+    for element in elements_list:
+        if len(element.split(' ')) < 3:
+            if element.find('/') != -1:
+                element.replace('/', ' ')
+            topic, created = Topic.objects.get_or_create(name=element)
+            topic.save()
+            job.topics.add(topic)
+    return redirect('dashboard:dashboard')
