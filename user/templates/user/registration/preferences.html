@@ -22,7 +22,25 @@
                 </div>
             {% endif %}
 
-            <h3>Select your favourite topics (max 3 allowed)</h3>
+            <h3 class="">Select your dream job</h3>
+
+            {% if form.dream_job.errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.dream_job.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <select class="form-select" name="{{ form.dream_job.name }}">
+                {% for choice in form.dream_job %}
+                    <option value="{{ choice.data.value }}" {% if choice.data.selected %}selected{% endif %}>
+                        {{ choice.choice_label }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <h3 class="mt-5">Select your favourite topics (max 3 allowed)</h3>
 
             {% if form.topics.errors %}
                 <div class="alert alert-danger">
@@ -42,26 +60,6 @@
                   </div>
               {% endfor %}
             </div>
-          
-
-
-            <h3 class="mt-5">Select your dream job</h3>
-
-            {% if form.dream_job.errors %}
-                <div class="alert alert-danger">
-                    {% for error in form.dream_job.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-
-            <select class="form-control" name="{{ form.dream_job.name }}">
-                {% for choice in form.dream_job %}
-                    <option value="{{ choice.data.value }}" {% if choice.data.selected %}selected{% endif %}>
-                        {{ choice.choice_label }}
-                    </option>
-                {% endfor %}
-            </select>
 
             <button type="submit" class="btn btn-primary mt-4">Submit</button>
         </form>

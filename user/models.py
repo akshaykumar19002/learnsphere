@@ -11,10 +11,20 @@ class Topic(models.Model):
 
 class Job(models.Model):
     name = models.CharField(max_length=200)
-    topics = models.ManyToManyField(Topic)
 
     def __str__(self):
         return self.name
+
+
+class JobTopic(models.Model):
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.topic.name} for {self.job.name}'
+
+    class Meta:
+        unique_together = ('job', 'topic',)
 
 
 class UserPreference(models.Model):

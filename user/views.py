@@ -13,7 +13,7 @@ from django.contrib import messages
 from .forms import *
 from .token import user_tokenizer_generate
 from dashboard.tasks import generate_recommendations_for_user_prefs
-from .models import Topic, Job, UserPreference
+from .models import *
 from . import scrap
 
 class Register(View):
@@ -146,13 +146,14 @@ def user_profile(request):
 @login_required(login_url='login')
 def user_preferences(request):
     unused_topics = Topic.objects.exclude(userpreference__isnull=False)
+
     try:
         user_pref = UserPreference.objects.get(user=request.user)
     except UserPreference.DoesNotExist:
         user_pref = None
 
     if request.method == 'POST':
-        form = UserPreferencesForm(request.POST)
+        form = UserPreferencesForm(request.POST, dream_job=user_pref.dream_job if user_pref else None)
         if form.is_valid():
             topics = form.cleaned_data['topics']
             dream_job = form.cleaned_data['dream_job']
@@ -169,7 +170,7 @@ def user_preferences(request):
             return render(request, 'user/registration/preferences.html', {'form': form, 'topics': unused_topics})
     else:
         if user_pref is not None:
-            form = UserPreferencesForm(initial={'topics': user_pref.topics.all(), 'dream_job': user_pref.dream_job})
+            form = UserPreferencesForm(initial={'topics': user_pref.topics.all(), 'dream_job': user_pref.dream_job}, dream_job=user_pref.dream_job)
         else:
             form = UserPreferencesForm()
     return render(request, 'user/registration/preferences.html', {'form': form, 'topics': unused_topics})
@@ -179,11 +180,11 @@ def get_skills(request, job):
     # Call the function from your scrap.py script and pass the job name
     elements_list = scrap.scrape_indeed(job)
     job = Job.objects.filter(name__icontains=job).first()
+
     for element in elements_list:
         if len(element.split(' ')) < 3:
             if element.find('/') != -1:
-                element.replace('/', ' ')
-            topic, created = Topic.objects.get_or_create(name=element)
-            topic.save()
-            job.topics.add(topic)
+                element = element.replace('/', ' ')
+            topic, _ = Topic.objects.get_or_create(name=element)
+            JobTopic.objects.get_or_create(job=job, topic=topic)
     return redirect('dashboard:dashboard')

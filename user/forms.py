@@ -74,13 +74,19 @@ class ChangePasswordForm(forms.Form):
 
 
 class UserPreferencesForm(forms.Form):
+    dream_job = forms.ModelChoiceField(
+        queryset=Job.objects.all(),
+    )
     topics = forms.ModelMultipleChoiceField(
         queryset=Topic.objects.all(),
         widget=forms.CheckboxSelectMultiple,
     )
-    dream_job = forms.ModelChoiceField(
-        queryset=Job.objects.all(),
-    )
+    
+    def __init__(self, *args, **kwargs):
+        dream_job = kwargs.pop('dream_job', None)
+        super().__init__(*args, **kwargs)
+        if dream_job is not None:
+            self.fields['topics'].queryset = Topic.objects.filter(jobtopic__job=dream_job)
 
     def clean_topics(self):
         print(self.cleaned_data )
